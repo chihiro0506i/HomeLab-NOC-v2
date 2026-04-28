@@ -1,0 +1,25 @@
+# homelab-noc v2
+# シェルスクリプトと設定ファイルは LF（Unix 改行）を強制する．
+# Windows 環境でも Raspberry Pi 上で正しく実行できるようにするため．
+
+# デフォルト: テキストファイルは自動変換
+* text=auto
+
+# シェルスクリプトは必ず LF
+*.sh text eol=lf
+
+# 設定ファイルは LF
+*.conf text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.env  text eol=lf
+*.example text eol=lf
+
+# Dockerfile は LF
+Dockerfile text eol=lf
+
+# ドキュメント・HTML・CSS・JS は自動変換でよい
+*.md   text
+*.html text
+*.css  text
+*.js   text

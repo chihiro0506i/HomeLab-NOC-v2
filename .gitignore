@@ -1,0 +1,19 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# runtime data
+data/
+backups/
+images/*.tar
+images/*.tar.gz
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs
+*.log

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Safe Start - homelab-noc</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="layout narrow">
+    <section class="hero small">
+      <div>
+        <p class="eyebrow">Safe Start</p>
+        <h1>安全に始める手順</h1>
+        <p class="lead">
+          いきなり家庭全体へ適用せず、影響範囲を小さく保ちながら段階的に確認します。
+        </p>
+      </div>
+      <a class="back" href="./index.html">Portal に戻る</a>
+    </section>
+
+    <section class="notice guide">
+      <div class="guide-step">
+        <span>1</span>
+        <div>
+          <h2>起動確認</h2>
+          <p>Portal、Pi-hole、NetAlertX、Uptime Kuma の画面が開けることを確認します。この段階ではルーターや端末の DNS 設定は変更しません。</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <span>2</span>
+        <div>
+          <h2>ローカル監視</h2>
+          <p>Uptime Kuma でローカルサービスだけを監視します。NetAlertX は自宅 LAN のみを対象にし、通知連携は必要になってから設定します。</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <span>3</span>
+        <div>
+          <h2>一台だけ Pi-hole を試す</h2>
+          <p>Windows PC など自分の端末だけ DNS を Raspberry Pi の IP へ向けます。問題が出たら DNS 設定を自動取得へ戻します。</p>
+        </div>
+      </div>
+
+      <div class="rules">
+        <h2>禁止事項</h2>
+        <ul>
+          <li>53 番ポートをインターネットへ公開しない。</li>
+          <li>管理画面をポート開放しない。</li>
+          <li>大学、研究室、会社、共有 Wi-Fi で無断スキャンしない。</li>
+          <li>.env、data、backups を GitHub へ公開しない。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

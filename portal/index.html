@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>homelab-noc Portal</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Raspberry Pi 5 HomeLab</p>
+        <h1>homelab-noc</h1>
+        <p class="lead">
+          DNS、端末検知、稼働監視をひとつにまとめたローカルネットワーク用ポータルです。
+          まずは各サービスの状態を確認し、必要な管理画面へすばやく移動できます。
+        </p>
+      </div>
+
+      <div class="status-panel" aria-label="portal status">
+        <span class="status-dot"></span>
+        <div>
+          <strong id="hostLabel">Host: loading...</strong>
+          <span>LAN 内からの利用を想定</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="operational summary">
+      <div>
+        <span class="summary-label">Scope</span>
+        <strong>Local only</strong>
+      </div>
+      <div>
+        <span class="summary-label">Exposure</span>
+        <strong>No public ports</strong>
+      </div>
+      <div>
+        <span class="summary-label">Start point</span>
+        <strong>Safe DNS rollout</strong>
+      </div>
+    </section>
+
+    <section class="section-heading">
+      <p class="eyebrow">Services</p>
+      <h2>管理画面</h2>
+    </section>
+
+    <section class="cards" aria-label="service links">
+      <a class="card" id="piholeLink" href="#">
+        <span class="tag">DNS</span>
+        <h3>Pi-hole</h3>
+        <p>DNS クエリを確認し、広告・トラッカー系ドメインのブロック状況を管理します。</p>
+        <span class="open">Open admin</span>
+      </a>
+
+      <a class="card" id="netalertxLink" href="#">
+        <span class="tag">LAN inventory</span>
+        <h3>NetAlertX</h3>
+        <p>LAN 内の端末を検知し、新しい機器や接続状態の変化を確認します。</p>
+        <span class="open">Open dashboard</span>
+      </a>
+
+      <a class="card" id="uptimeLink" href="#">
+        <span class="tag">Monitoring</span>
+        <h3>Uptime Kuma</h3>
+        <p>ポータルやローカル Web サービスの死活監視、応答時間、履歴を確認します。</p>
+        <span class="open">Open monitor</span>
+      </a>
+
+      <a class="card" href="./safe-start.html">
+        <span class="tag">Guide</span>
+        <h3>Safe Start</h3>
+        <p>家庭内ネットワークに影響を出しにくい順番で、確認項目と禁止事項を整理します。</p>
+        <span class="open">Read guide</span>
+      </a>
+    </section>
+
+    <section class="notice">
+      <div>
+        <p class="eyebrow">First check</p>
+        <h2>最初に守ること</h2>
+      </div>
+      <p>
+        起動しただけでは家庭全体の DNS 設定は変わりません。最初は管理用 PC など一台だけで
+        Pi-hole を試し、問題がないことを確認してから対象を広げてください。管理画面や 53 番ポートは
+        インターネットへ公開しない前提です。
+      </p>
+    </section>
+  </main>
+  <script src="./main.js"></script>
+</body>
+</html>

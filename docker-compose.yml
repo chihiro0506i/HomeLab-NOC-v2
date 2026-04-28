@@ -1,0 +1,95 @@
+# homelab-noc v2
+# Raspberry Pi 5 用のローカル運用重視ホームラボ構成
+#
+# 注意:
+# - ルータのDNS設定を変更するまでは，家全体の通信には影響しません．
+# - 53番ポート，管理画面ポートをインターネットに公開しないでください．
+# - NetAlertX は自分が管理している自宅LAN内だけで使ってください．
+
+services:
+  pihole:
+    image: pihole/pihole:${PIHOLE_TAG:-latest}
+    container_name: homelab-pihole
+    hostname: pihole
+    restart: unless-stopped
+    depends_on:
+      unbound:
+        condition: service_started
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${PIHOLE_DNS_PORT:-53}:53/tcp"
+      - "${BIND_ADDRESS:-0.0.0.0}:${PIHOLE_DNS_PORT:-53}:53/udp"
+      - "${BIND_ADDRESS:-0.0.0.0}:${PIHOLE_WEB_PORT:-8081}:80/tcp"
+    environment:
+      TZ: ${TZ:-Asia/Tokyo}
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:-CHANGE_ME_BEFORE_START}
+      # Pi-hole v6 では FTLCONF_dns_upstreams を使う．
+      # Unbound は同じ Docker network 内で 5335 番を listen する．
+      FTLCONF_dns_upstreams: "unbound#5335"
+      # LAN内の端末から問い合わせを受けるための設定．外部公開はしないこと．
+      FTLCONF_dns_listeningMode: "all"
+    volumes:
+      - ./data/pihole/etc-pihole:/etc/pihole
+      - ./data/pihole/logs:/var/log/pihole
+    networks:
+      - homelab
+
+  unbound:
+    build:
+      context: ./services/unbound
+    image: homelab-unbound:local
+    container_name: homelab-unbound
+    hostname: unbound
+    restart: unless-stopped
+    expose:
+      - "5335/tcp"
+      - "5335/udp"
+    volumes:
+      - ./configs/unbound/unbound.conf:/etc/unbound/unbound.conf:ro
+      - ./data/unbound:/var/lib/unbound
+    networks:
+      - homelab
+
+  netalertx:
+    image: ghcr.io/netalertx/netalertx:${NETALERTX_TAG:-latest}
+    container_name: homelab-netalertx
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data/netalertx:/data
+      - /etc/localtime:/etc/localtime:ro
+    tmpfs:
+      - /tmp:uid=20211,gid=20211,mode=1700
+    environment:
+      PORT: ${NETALERTX_PORT:-20211}
+      PUID: ${NETALERTX_UID:-20211}
+      PGID: ${NETALERTX_GID:-20211}
+      # 初期スキャン対象．実際の自宅LANに合わせて .env の HOME_SUBNET と LAN_INTERFACE を変更する．
+      # 例: HOME_SUBNET=192.168.1.0/24, LAN_INTERFACE=eth0
+      APP_CONF_OVERRIDE: '{"SCAN_SUBNETS":"[''${HOME_SUBNET:-192.168.1.0/24} --interface=${LAN_INTERFACE:-eth0}'']","GRAPHQL_PORT":"20212"}'
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:${UPTIME_KUMA_TAG:-2}
+    container_name: homelab-uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${UPTIME_KUMA_PORT:-3001}:3001/tcp"
+    volumes:
+      - ./data/uptime-kuma:/app/data
+    networks:
+      - homelab
+
+  portal:
+    image: nginx:alpine
+    container_name: homelab-portal
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${PORTAL_PORT:-8080}:80/tcp"
+    volumes:
+      - ./portal:/usr/share/nginx/html:ro
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    name: homelab-noc
+    driver: bridge
