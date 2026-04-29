@@ -138,11 +138,11 @@ Phase 4: 必要なら家全体へ広げる
 
 ## ドキュメント
 
-- [HomeLab-NOC-v2 全体アーキテクチャ](docs/architecture.md)
-- [Raspberry Pi デプロイ手順](docs/deployment.md)
 - [Notify Hub イベント集約](docs/notify.md)
   - [Uptime Kuma Webhook連携 設定手順](docs/uptime-kuma-webhook-setup.md)
 - [オフライン運用・障害時の対応](docs/offline.md)
+- [セキュリティ方針](docs/security.md)
+- [トラブルシューティング](docs/troubleshooting.md)
 
 ## 主なコマンド
 
