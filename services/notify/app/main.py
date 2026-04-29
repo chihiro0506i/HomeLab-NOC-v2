@@ -38,8 +38,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("notify")
 
-
-
 # ---------------------------------------------------------------------------
 # Lifespan
 # ---------------------------------------------------------------------------
@@ -183,9 +181,6 @@ async def test_notification(
     return EventResponse(event_id=event_id)
 
 
-
-
-
 # ===================================================================== #
 #  Web pages (HTML)                                                      #
 # ===================================================================== #
@@ -233,5 +228,3 @@ async def page_events(
             "filter_severity": severity or "",
         },
     )
-
-
