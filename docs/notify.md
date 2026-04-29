@@ -1,6 +1,6 @@
 # Notify Hub
 
-HomeLab-NOC-v2 のサブプロジェクトとして動作する通知集約サービスです。
+HomeLab-NOC-v2 のサブプロジェクトとして動作するイベント集約サービスです。
 FastAPI + SQLite で構成され、Uptime Kuma やバックアップスクリプトなどからのイベントを受信・保存し、Web ダッシュボードで履歴を閲覧できます。
 
 ## 起動方法
@@ -63,7 +63,7 @@ Uptime Kuma で監視するためのヘルスチェックです。
   "dedup_key": "uptime:pihole_dns:down",
   "metadata": {
     "monitor_name": "Pi-hole DNS",
-    "url": "192.168.11.11:53"
+    "target": "192.168.11.11:53"
   }
 }
 ```
@@ -89,21 +89,30 @@ Uptime Kuma で監視するためのヘルスチェックです。
 
 ## Uptime Kuma Webhook 連携
 
-Uptime Kuma から Notify Hub へ Webhook でイベントを送る方法です。
+Uptime Kuma の監視結果を Notify Hub に Webhook で送信し、イベントとして記録する仕組みです。
+これにより、サービスの障害・復旧イベントを Notify Hub のダッシュボードで一覧確認できます。
 
-### Uptime Kuma 側の設定
+### 接続方法
+
+- **Docker ネットワーク内**（推奨）: `http://notify:8090/api/events`
+  - Uptime Kuma と Notify Hub が同じ Docker Compose で動いている場合、Compose サービス名 `notify` で通信できます。
+- **LAN 内 Raspberry Pi IP 経由**: `http://<RaspberryPi-IP>:8090/api/events`
+
+> **注意:** ルータのポート開放は行わないでください。Notify Hub はインターネットに公開しない前提です。
+
+### Uptime Kuma 側の設定手順
 
 1. Uptime Kuma の「通知」設定で **Webhook** を追加
-2. URL: `http://notify:8090/api/events`（Docker ネットワーク内、Compose サービス名を使用）
-   - Docker 外から送る場合: `http://<RaspberryPi-IP>:8090/api/events`
+2. URL: `http://notify:8090/api/events`
 3. Method: `POST`
 4. Content-Type: `application/json`
 5. Custom Headers に追加:
    ```
    X-Notify-Token: <NOTIFY_API_TOKEN の値>
    ```
+6. `X-Notify-Token` の値は `.env` の `NOTIFY_API_TOKEN` と一致させてください
 
-### Uptime Kuma が送る JSON テンプレート
+### Webhook JSON テンプレート
 
 Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定してください。
 
@@ -141,24 +150,37 @@ Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定
 }
 ```
 
-> **注意:** Uptime Kuma の Webhook テンプレート記法は Uptime Kuma のバージョンにより異なる場合があります。
-> 上記の `{{ }}` プレースホルダーは Uptime Kuma のテンプレート変数です。
-> 設定前に Uptime Kuma のドキュメントを確認してください。
+> **注意:** 上記の `{{ }}` はUptime Kuma のテンプレート変数です。
+> 実際の変数名はUptime Kuma のバージョンや設定画面によって異なる場合があります。
+> 設定前に Uptime Kuma 側の画面やドキュメントで利用可能な変数を確認してください。
 
-### 推奨 severity 設定
+## イベント設計
 
-| モニター対象 | Down 時の severity |
-|-------------|-------------------|
-| Pi-hole DNS | `critical` |
-| Portal | `warning` |
-| NetAlertX | `warning` |
-| Notify Hub /health | `warning` |
+Notify Hub に記録する主なイベントの設計です。
+
+| モニター対象 | source | event_type | severity | 方針 |
+|-------------|--------|-----------|----------|------|
+| Pi-hole DNS down | `uptime-kuma` | `monitor_down` | `critical` | 将来の通知対象 |
+| Pi-hole DNS up | `uptime-kuma` | `monitor_up` | `info` | 記録のみ |
+| Portal down | `uptime-kuma` | `monitor_down` | `warning` | 記録のみ |
+| NetAlertX down | `uptime-kuma` | `monitor_down` | `warning` | 記録のみ |
+| Notify Hub down | `uptime-kuma` | `monitor_down` | `warning` | Uptime Kuma 側で検知。Notify Hub 自身には送れない可能性がある |
+
+> **備考:** Notify Hub 自身の障害は、Uptime Kuma が `/health` の応答失敗を検知しますが、
+> その通知を Notify Hub に Webhook で送っても受信できない場合があります。
+> Notify Hub の死活は Uptime Kuma のダッシュボードで直接確認してください。
 
 ## スクリプト
 
 ```bash
-# テストイベント送信
+# 汎用テストイベント送信
 ./scripts/notify-test-event.sh
+
+# Uptime Kuma 風 monitor_down イベント送信
+./scripts/notify-test-uptime-down.sh
+
+# Uptime Kuma 風 monitor_up イベント送信
+./scripts/notify-test-uptime-up.sh
 
 # ヘルスチェック
 ./scripts/notify-status.sh
@@ -166,6 +188,44 @@ Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定
 # ログ確認
 ./scripts/notify-logs.sh
 ```
+
+## Raspberry Pi 上での実機確認手順
+
+Windows 上での開発後、以下の手順でラズパイ上で動作確認を行ってください。
+
+```bash
+# 1. リポジトリを最新化
+cd ~/projects/HomeLab-NOC-v2
+git pull
+
+# 2. Compose 構文チェック
+docker compose config > /tmp/compose-check.yml
+
+# 3. Notify Hub を再ビルド・起動
+docker compose up -d --build notify
+
+# 4. ヘルスチェック
+./scripts/notify-status.sh
+
+# 5. テストイベント送信
+./scripts/notify-test-event.sh
+./scripts/notify-test-uptime-down.sh
+./scripts/notify-test-uptime-up.sh
+
+# 6. Web 画面確認
+curl -i http://localhost:8090/
+curl -i http://localhost:8090/events
+
+# 7. API でイベント一覧確認
+curl -s http://localhost:8090/api/events | python3 -m json.tool
+```
+
+**期待結果:**
+
+- `notify-status.sh` が `{"status":"ok","service":"homelab-notify"}` を返す
+- 各テストスクリプトが HTTP 201 で成功する
+- `/` と `/events` が 200 OK を返す
+- `/api/events` に `manual` と `uptime-kuma` の両方のイベントが表示される
 
 ## セキュリティ
 
