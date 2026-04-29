@@ -19,3 +19,5 @@ echo "Portal      : http://${HOST_IP}:${PORTAL_PORT:-8080}"
 echo "Pi-hole     : http://${HOST_IP}:${PIHOLE_WEB_PORT:-8081}/admin"
 echo "NetAlertX   : http://${HOST_IP}:${NETALERTX_PORT:-20211}"
 echo "Uptime Kuma : http://${HOST_IP}:${UPTIME_KUMA_PORT:-3001}"
+echo "Notify Hub  : http://${HOST_IP}:${NOTIFY_PORT:-8090}"
+

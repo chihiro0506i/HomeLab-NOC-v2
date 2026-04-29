@@ -1,12 +1,12 @@
 # homelab-noc v2
 
-Raspberry Pi 5 を，自宅ネットワークの「小さな監視センター」として使うための Docker Compose プロジェクトです．
+Raspberry Pi 5 を，自宅ネットワークの「小さな監視センター」として使うための Docker Compose プロジェクトである．
 
-このプロジェクトは，Pi-hole，Unbound，NetAlertX，Uptime Kuma，Portal をまとめて起動します．最初から家全体の DNS を変更するのではなく，まずはラズパイ上で画面を確認し，次に自分の端末だけ Pi-hole を試し，最後に必要なら家全体へ広げる，という安全な段階導入を前提にしています．
+このプロジェクトは，Pi-hole，Unbound，NetAlertX，Uptime Kuma，Portal，Notify Hub をまとめて起動する．最初から家全体の DNS を変更するのではなく，まずはラズパイ上で画面を確認し，次に自分の端末だけ Pi-hole を試し，最後に必要なら家全体へ広げる，という安全な段階導入を前提にしている．
 
 ## 何を作るプロジェクトか
 
-このプロジェクトで作るものは，次のようなホームラボです．
+このプロジェクトで作るものは，次のようなホームラボである．
 
 ```text
 Raspberry Pi 5
@@ -14,10 +14,11 @@ Raspberry Pi 5
   ├─ Pi-hole     : DNS広告・トラッカーブロック
   ├─ Unbound     : Pi-hole用のローカル再帰DNS
   ├─ NetAlertX   : LAN内端末の検出・一覧化
-  └─ Uptime Kuma : サービス死活監視
+  ├─ Uptime Kuma : サービス死活監視
+  └─ Notify Hub  : イベント集約・通知ハブ
 ```
 
-DNS の流れは，基本的に次のようになります．
+DNS の流れは，基本的に次のようになる．
 
 ```text
 PC / iPhone / iPad
@@ -29,11 +30,11 @@ Unbound
 インターネット上の権威DNSサーバ群
 ```
 
-Unbound を使っても，インターネット上の名前を解決する以上，完全に外部通信ゼロにはなりません．ただし，Google DNS や Cloudflare DNS などの特定の外部DNS事業者に問い合わせ履歴をまとめて渡す構成ではなくなります．
+Unbound を使っても，インターネット上の名前を解決する以上，完全に外部通信ゼロにはなりません．ただし，Google DNS や Cloudflare DNS などの特定の外部DNS事業者に問い合わせ履歴をまとめて渡す構成ではなくなる．
 
 ## 最初に大事な注意
 
-このプロジェクトは，起動するだけなら家全体のインターネット設定を勝手に変えません．危なくなりやすいのは，次のような操作をしたときです．
+このプロジェクトは，起動するだけなら家全体のインターネット設定を勝手に変えません．危なくなりやすいのは，次のような操作をしたときである．
 
 ```text
 危険な操作
@@ -44,7 +45,7 @@ Unbound を使っても，インターネット上の名前を解決する以上
 ・初期パスワードのまま使う
 ```
 
-特に，DNSサーバや管理画面をインターネットに直接公開してはいけません．自宅LAN内だけで使ってください．外出先から見たい場合は，ポート開放ではなく Tailscale や WireGuard などの VPN を使う方針にしてください．
+特に，DNSサーバや管理画面をインターネットに直接公開してはいけません．自宅LAN内だけで使ってこと．外出先から見たい場合は，ポート開放ではなく Tailscale や WireGuard などの VPN を使う方針にしてこと．
 
 ## 必要なもの
 
@@ -61,50 +62,51 @@ Unbound を使っても，インターネット上の名前を解決する以上
 ・Docker Compose Plugin
 ```
 
-Docker が未導入の場合は，まず公式手順に従って Docker を導入してください．このプロジェクトの `scripts/setup.sh` は Docker の存在確認はしますが，勝手に Docker をインストールする設計にはしていません．
+Docker が未導入の場合は，まず公式手順に従って Docker を導入してこと．このプロジェクトの `scripts/setup.sh` は Docker の存在確認はしますが，勝手に Docker をインストールする設計にはしていません．
 
 ## 使い方
 
-ラズパイにディレクトリを置きます．
+ラズパイにディレクトリを置きる．
 
 ```bash
 cd homelab-noc-v2
 ```
 
-初期セットアップを実行します．
+初期セットアップを実行する．
 
 ```bash
 ./scripts/setup.sh
 ```
 
-`.env` を編集します．特に `PIHOLE_PASSWORD` は必ず変更してください．
+`.env` を編集する．特に `PIHOLE_PASSWORD` は必ず変更すること．
 
 ```bash
 nano .env
 ```
 
-起動前チェックを実行します．
+起動前チェックを実行する．
 
 ```bash
 ./scripts/preflight.sh
 ```
 
-起動します．
+起動する．
 
 ```bash
 ./scripts/start.sh
 ```
 
-起動後，ラズパイのIPアドレスが `192.168.1.50` なら，ブラウザで次にアクセスします．
+起動後，ラズパイのIPアドレスが `192.168.1.50` なら，ブラウザで次にアクセスする．
 
 ```text
 Portal      : http://192.168.1.50:8080
 Pi-hole     : http://192.168.1.50:8081/admin
 NetAlertX   : http://192.168.1.50:20211
 Uptime Kuma : http://192.168.1.50:3001
+Notify Hub  : http://192.168.1.50:8090
 ```
 
-ラズパイのIPアドレスは，次で確認できます．
+ラズパイのIPアドレスは，次で確認できる．
 
 ```bash
 hostname -I
@@ -112,7 +114,7 @@ hostname -I
 
 ## 安全な導入順序
 
-最初は，家全体のDNSを変更しないでください．次の順番で進めます．
+最初は，家全体のDNSを変更しないでこと．次の順番で進める．
 
 ```text
 Phase 1: 起動確認
@@ -134,6 +136,14 @@ Phase 4: 必要なら家全体へ広げる
   ・ラズパイ停止時に名前解決できなくなる可能性を理解してから行う
 ```
 
+## ドキュメント
+
+- [Notify Hub イベント集約](docs/notify.md)
+  - [Uptime Kuma Webhook連携 設定手順](docs/uptime-kuma-webhook-setup.md)
+- [オフライン運用・障害時の対応](docs/offline.md)
+- [セキュリティ方針](docs/security.md)
+- [トラブルシューティング](docs/troubleshooting.md)
+
 ## 主なコマンド
 
 ```bash
@@ -150,6 +160,12 @@ Phase 4: 必要なら家全体へ広げる
 ./scripts/update.sh         # イメージ更新と再起動
 ./scripts/offline-export.sh # Dockerイメージを tar.gz に保存
 ./scripts/offline-import.sh # 保存済みDockerイメージを読み込み
+./scripts/notify-test-event.sh  # Notify Hub テストイベント送信
+./scripts/notify-test-uptime-down.sh  # Uptime Kuma 風 down イベント送信
+./scripts/notify-test-uptime-up.sh    # Uptime Kuma 風 up イベント送信
+./scripts/notify-show-uptime-events.sh # Uptime Kuma のイベント一覧を表示
+./scripts/notify-status.sh      # Notify Hub ヘルスチェック
+./scripts/notify-logs.sh        # Notify Hub ログ確認
 ```
 
 ## フォルダ構成
@@ -163,24 +179,26 @@ homelab-noc-v2/
 ├── README.md
 ├── portal/
 ├── services/
-│   └── unbound/
+│   ├── unbound/
+│   └── notify/
 ├── configs/
 │   └── unbound/
 ├── scripts/
 ├── docs/
 ├── data/
 ├── backups/
+├── secrets/
 └── images/
 ```
 
-`data/`，`backups/`，`images/`，`.env` は GitHub に公開しないでください．
+`data/`，`backups/`，`images/`，`.env` は GitHub に公開しないでこと．
 
 ## OSSについて
 
-このプロジェクトは，複数のOSSを組み合わせるテンプレートです．Pi-hole，NetAlertX，Uptime Kuma などの本体コードをこのzip内に同梱しているわけではありません．初回起動時に Docker が各イメージを取得します．
+このプロジェクトは，複数のOSSを組み合わせるテンプレートである．Pi-hole，NetAlertX，Uptime Kuma などの本体コードをこのzip内に同梱しているわけではない．初回起動時に Docker が各イメージを取得する．
 
-このテンプレート部分，つまり `docker-compose.yml`，`portal/`，`scripts/`，`docs/` は MIT License としています．ただし，各OSS本体にはそれぞれのライセンスがあります．詳しくは `docs/references.md` を確認してください．
+このテンプレート部分，つまり `docker-compose.yml`，`portal/`，`scripts/`，`docs/` は MIT License としている．ただし，各OSS本体にはそれぞれのライセンスがありる．詳しくは `docs/references.md` を確認してこと．
 
 ## 動作確認について
 
-家庭用ルータとの組み合わせまでは環境依存があるため，必ず `./scripts/preflight.sh` から始めてください．
+家庭用ルータとの組み合わせまでは環境依存があるため，必ず `./scripts/preflight.sh` から始めてこと．

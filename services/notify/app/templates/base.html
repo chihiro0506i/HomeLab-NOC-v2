@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Notify Hub – HomeLab-NOC-v2 event aggregation dashboard" />
+  <title>{% block title %}Notify Hub{% endblock %} – homelab-noc</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <nav class="topnav" aria-label="primary navigation">
+    <a href="/" class="topnav-brand">Notify Hub</a>
+    <div class="topnav-links">
+      <a href="/" id="nav-dashboard">Dashboard</a>
+      <a href="/events" id="nav-events">Events</a>
+      <a href="/health" id="nav-health">Health</a>
+    </div>
+  </nav>
+
+  <main class="layout">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>Notify Hub · <a href="/">homelab-noc v2</a></p>
+  </footer>
+</body>
+</html>

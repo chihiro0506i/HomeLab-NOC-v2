@@ -19,6 +19,11 @@ if [[ "${PIHOLE_PASSWORD:-}" == "CHANGE_ME_STRONG_PASSWORD" || "${PIHOLE_PASSWOR
   exit 1
 fi
 
+if [[ "${NOTIFY_API_TOKEN:-}" == "CHANGE_ME_NOTIFY_TOKEN" || -z "${NOTIFY_API_TOKEN:-}" ]]; then
+  echo "[start] ERROR: NOTIFY_API_TOKEN が初期値のままです．nano .env で変更してください．" >&2
+  exit 1
+fi
+
 echo "[start] Docker Compose を起動します．初回はイメージ取得と Unbound build のため時間がかかります．"
 docker compose up -d --build
 

@@ -98,6 +98,26 @@ services:
     networks:
       - homelab
 
+  notify:
+    build:
+      context: ./services/notify
+      dockerfile: Dockerfile
+      args:
+        NOTIFY_UID: ${NOTIFY_UID:-20212}
+        NOTIFY_GID: ${NOTIFY_GID:-20212}
+    container_name: homelab-notify
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${NOTIFY_PORT:-8090}:8090/tcp"
+    environment:
+      TZ: ${TZ:-Asia/Tokyo}
+      NOTIFY_API_TOKEN: ${NOTIFY_API_TOKEN}
+      NOTIFY_DB_PATH: /app/data/notify.db
+    volumes:
+      - ./data/notify:/app/data
+    networks:
+      - homelab
+
 networks:
   homelab:
     name: homelab-noc
