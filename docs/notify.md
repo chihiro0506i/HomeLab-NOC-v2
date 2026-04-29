@@ -91,31 +91,63 @@ Uptime Kuma で監視するためのヘルスチェックです。
 Uptime Kuma の監視結果を Notify Hub に Webhook で送信し、イベントとして記録する仕組みです。
 これにより、サービスの障害・復旧イベントを Notify Hub のダッシュボードで一覧確認できます。
 
-### 接続方法
+### 設定手順 (1) Notify Hub 自身の監視
 
-- **Docker ネットワーク内**（推奨）: `http://notify:8090/api/events`
-  - Uptime Kuma と Notify Hub が同じ Docker Compose で動いている場合、Compose サービス名 `notify` で通信できます。
-- **LAN 内 Raspberry Pi IP 経由**: `http://<RaspberryPi-IP>:8090/api/events`
+まず、Uptime Kuma に Notify Hub 自体の監視 (HTTP) を追加することをおすすめします。
+- **監視URL例**: `http://192.168.11.11:8090/health`
+- **Method**: GET
 
-> **注意:** ルータのポート開放は行わないでください。Notify Hub はインターネットに公開しない前提です。
+### 設定手順 (2) Webhook 通知の作成
 
-### Uptime Kuma 側の設定手順
+次に、Uptime Kuma の「通知」設定から **Webhook** を追加し、以下の通り設定します。
 
-1. Uptime Kuma の「通知」設定で **Webhook** を追加
-2. URL: `http://notify:8090/api/events`
-3. Method: `POST`
-4. Content-Type: `application/json`
-5. Custom Headers に追加:
-   ```
-   X-Notify-Token: <NOTIFY_API_TOKEN の値>
-   ```
-6. `X-Notify-Token` の値は `.env` の `NOTIFY_API_TOKEN` と一致させてください
+- **URL**: 
+  - Docker Compose 内から Notify Hub へ送る場合: `http://notify:8090/api/events`
+  - LAN IP経由で送る場合: `http://192.168.11.11:8090/api/events`
+- **Method**: `POST`
+- **Content-Type**: `application/json`
+- **Custom Headers**:
+  ```
+  X-Notify-Token: <NOTIFY_API_TOKEN の値>
+  ```
+  ※ `.env` の `NOTIFY_API_TOKEN` と一致させてください。
 
-### Webhook JSON テンプレート
+> **注意:** ルータのポート開放は絶対にしないでください。
 
-Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定してください。
+### Webhook JSON テンプレート（固定値版・推奨）
 
-**Monitor Down (critical):**
+まずは変数展開に依存しない**固定値版**の JSON でテスト送信を行い、通信が成功することを確認してください。
+（Uptime Kuma のテンプレート変数はバージョン差があり、最初から変数版を使うと切り分けが難しいためです）
+
+**固定値版 monitor_down 例:**
+
+```json
+{
+  "source": "uptime-kuma",
+  "event_type": "monitor_down",
+  "severity": "critical",
+  "title": "Uptime Kuma test monitor is DOWN",
+  "message": "This is a fixed test payload from Uptime Kuma.",
+  "dedup_key": "uptime:test-monitor:down",
+  "metadata": {
+    "monitor_name": "Uptime Kuma test monitor",
+    "test": true
+  }
+}
+```
+
+固定値版が HTTP 201 で成功してから、以下の「変数版」へ進む流れをおすすめします。
+
+### Webhook JSON テンプレート（変数版）
+
+以下のテンプレートは Uptime Kuma の変数を活用する例です。
+
+> **【重要】Webhookテンプレート変数についての注意**
+> 上記の `{{ }}` は Uptime Kuma のテンプレート変数です。
+> 実際の変数名や送信される JSON の構造は、**Uptime Kuma のバージョンや設定画面のUIによって異なる場合が多々あります**。
+> そのため、設定後は**必ず Uptime Kuma 側の「Test」ボタンからテスト通知を送信し、意図した JSON が送られているか（および Notify Hub 側で HTTP 201 や 422 などの応答がどうなるか）を実機で確認してください**。
+
+**変数版 monitor_down (critical) 例:**
 
 ```json
 {
@@ -132,7 +164,7 @@ Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定
 }
 ```
 
-**Monitor Up (info):**
+**変数版 monitor_up (info) 例:**
 
 ```json
 {
@@ -149,10 +181,17 @@ Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定
 }
 ```
 
-> **【重要】Webhookテンプレート変数についての注意**
-> 上記の `{{ }}` は Uptime Kuma のテンプレート変数です。
-> 実際の変数名や送信される JSON の構造は、**Uptime Kuma のバージョンや設定画面のUIによって異なる場合が多々あります**。
-> そのため、設定後は**必ず Uptime Kuma 側の「Test」ボタンからテスト通知を送信し、意図した JSON が送られているか（および Notify Hub 側で HTTP 201 や 422 などの応答がどうなるか）を実機で確認してください**。
+### Test 通知の確認チェックリスト
+
+Uptime Kuma の「Test」ボタンを押した際は、以下を確認してください。
+
+- [ ] Notify Hub 側のレスポンスが HTTP 201 になることを確認する
+- [ ] もし 401 なら `X-Notify-Token` が間違っている
+- [ ] もし 422 なら JSON body，`source`，`severity`，必須項目のいずれかが不正
+- [ ] もし 500 なら Notify Hub のログを確認する
+- [ ] Test 後に `http://192.168.11.11:8090/events` を開き、`source=uptime-kuma` のイベントが増えていることを確認する
+- [ ] 必要なら以下で確認する：
+      `curl -s "http://localhost:8090/api/events?source=uptime-kuma" | python3 -m json.tool`
 
 ## イベント設計
 
@@ -181,6 +220,9 @@ Notify Hub に記録する主なイベントの設計です。
 
 # Uptime Kuma 風 monitor_up イベント送信
 ./scripts/notify-test-uptime-up.sh
+
+# Uptime Kuma のイベント一覧を表示
+./scripts/notify-show-uptime-events.sh
 
 # ヘルスチェック
 ./scripts/notify-status.sh
@@ -244,20 +286,38 @@ docker compose logs notify
 
 ### 401 Unauthorized が返る
 
-`X-Notify-Token` ヘッダーの値と `.env` の `NOTIFY_API_TOKEN` が一致しているか確認してください。
-
-### データベースエラー (attempt to write a readonly database)
-
-`POST /api/events` が `HTTP 500` になり、`docker compose logs notify` で以下のエラーが出る場合：
-`sqlite3.OperationalError: attempt to write a readonly database`
-
 **原因:**
-`data/notify/` の所有者が、コンテナ内の `notify` ユーザ (デフォルト UID/GID: `20212:20212`) と合っていないためです。
+`X-Notify-Token` ヘッダーの値と `.env` の `NOTIFY_API_TOKEN` が一致していません。
 
 **対処法:**
-`setup.sh` を再実行するか、以下のコマンドを手動で実行して権限を修正してください。
+Uptime Kuma の Webhook ヘッダを見直してください。
 
-```bash
-sudo chown -R 20212:20212 data/notify
-sudo chmod -R u+rwX,g+rwX data/notify
-```
+### 422 Unprocessable Entity が返る
+
+**原因:**
+JSON形式は届いていますが、Notify Hub の入力バリデーションに失敗しています。
+
+**よくある原因:**
+- `source` が `uptime-kuma`, `backup`, `manual`, `system` 以外
+- `severity` が `info`, `warning`, `error`, `critical` 以外
+- `title` が空
+- JSON として壊れている
+
+**対処法:**
+- まず「固定値版」の Webhook テンプレートでテスト送信を試してください。
+- `docker compose logs --tail=100 notify` で詳細なバリデーションエラーを確認してください。
+
+### 500 Internal Server Error (データベースエラー等)
+
+**原因候補:**
+- `data/notify` の権限問題 (例: `sqlite3.OperationalError: attempt to write a readonly database`)
+- SQLite DB への書き込み失敗
+
+**対処法:**
+1. ログを確認: `docker compose logs --tail=100 notify`
+2. 権限を確認: `ls -ln data/notify`
+3. 権限を修正 (必要な場合):
+   ```bash
+   sudo chown -R 20212:20212 data/notify
+   sudo chmod -R u+rwX,g+rwX data/notify
+   ```

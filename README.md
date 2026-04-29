@@ -155,6 +155,7 @@ Phase 4: 必要なら家全体へ広げる
 ./scripts/notify-test-event.sh  # Notify Hub テストイベント送信
 ./scripts/notify-test-uptime-down.sh  # Uptime Kuma 風 down イベント送信
 ./scripts/notify-test-uptime-up.sh    # Uptime Kuma 風 up イベント送信
+./scripts/notify-show-uptime-events.sh # Uptime Kuma のイベント一覧を表示
 ./scripts/notify-status.sh      # Notify Hub ヘルスチェック
 ./scripts/notify-logs.sh        # Notify Hub ログ確認
 ```
