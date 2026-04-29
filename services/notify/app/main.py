@@ -216,9 +216,9 @@ async def page_index(request: Request) -> HTMLResponse:
         recent_events = await fetch_events(db, limit=5)
 
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
+        request=request,
+        name="index.html",
+        context={
             "total_events": total_events,
             "critical_count": critical_count,
             "error_count": error_count,
@@ -242,9 +242,9 @@ async def page_events(
         )
 
     return templates.TemplateResponse(
-        "events.html",
-        {
-            "request": request,
+        request=request,
+        name="events.html",
+        context={
             "events": events,
             "filter_source": source or "",
             "filter_severity": severity or "",
@@ -261,9 +261,9 @@ async def page_jobs(request: Request) -> HTMLResponse:
             jobs = await fetch_slurm_jobs(db, limit=200)
 
     return templates.TemplateResponse(
-        "jobs.html",
-        {
-            "request": request,
+        request=request,
+        name="jobs.html",
+        context={
             "jobs": jobs,
             "slurm_enabled": SLURM_ENABLED,
         },
