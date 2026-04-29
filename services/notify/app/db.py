@@ -41,25 +41,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     sent_at     TEXT    NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS slurm_jobs (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    job_id          TEXT    NOT NULL UNIQUE,
-    job_name        TEXT,
-    state           TEXT,
-    previous_state  TEXT,
-    partition       TEXT,
-    node            TEXT,
-    submit_time     TEXT,
-    start_time      TEXT,
-    end_time        TEXT,
-    elapsed         TEXT,
-    exit_code       TEXT,
-    reason          TEXT,
-    stdout_path     TEXT,
-    stderr_path     TEXT,
-    last_log_tail   TEXT,
-    last_seen       TEXT    NOT NULL
-);
+
 
 CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
@@ -145,19 +127,6 @@ async def fetch_events(
     rows = await cursor.fetchall()
     return [dict(row) for row in rows]
 
-
-async def fetch_slurm_jobs(
-    db: aiosqlite.Connection,
-    *,
-    limit: int = 100,
-) -> list[dict[str, Any]]:
-    """Return Slurm jobs ordered by newest ``last_seen`` first."""
-    cursor = await db.execute(
-        "SELECT * FROM slurm_jobs ORDER BY last_seen DESC LIMIT ?",
-        (limit,),
-    )
-    rows = await cursor.fetchall()
-    return [dict(row) for row in rows]
 
 
 async def count_events(

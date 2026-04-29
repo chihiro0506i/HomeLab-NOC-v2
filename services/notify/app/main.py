@@ -20,7 +20,6 @@ from fastapi.templating import Jinja2Templates
 from .db import (
     count_events,
     fetch_events,
-    fetch_slurm_jobs,
     get_db,
     init_db,
     insert_event,
@@ -39,11 +38,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("notify")
 
-# ---------------------------------------------------------------------------
-# Configuration (read from environment)
-# ---------------------------------------------------------------------------
 
-SLURM_ENABLED: bool = os.getenv("SLURM_ENABLED", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
 # Lifespan
@@ -55,7 +50,6 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Startup / shutdown tasks."""
     logger.info("Notify Hub starting …")
     await init_db()
-    logger.info("SLURM_ENABLED=%s", SLURM_ENABLED)
     yield
     logger.info("Notify Hub shutting down …")
 
@@ -189,17 +183,7 @@ async def test_notification(
     return EventResponse(event_id=event_id)
 
 
-# --- Slurm jobs (JSON API) -----------------------------------------------
 
-@app.get("/api/slurm/jobs", tags=["slurm"])
-async def list_slurm_jobs(
-    limit: int = Query(100, ge=1, le=1000),
-) -> list[dict[str, Any]]:
-    """Return Slurm job records.  Returns ``[]`` when monitoring is disabled."""
-    if not SLURM_ENABLED:
-        return []
-    async with get_db() as db:
-        return await fetch_slurm_jobs(db, limit=limit)
 
 
 # ===================================================================== #
@@ -223,7 +207,6 @@ async def page_index(request: Request) -> HTMLResponse:
             "critical_count": critical_count,
             "error_count": error_count,
             "recent_events": recent_events,
-            "slurm_enabled": SLURM_ENABLED,
         },
     )
 
@@ -252,19 +235,3 @@ async def page_events(
     )
 
 
-@app.get("/jobs", response_class=HTMLResponse, include_in_schema=False)
-async def page_jobs(request: Request) -> HTMLResponse:
-    """Slurm jobs page."""
-    jobs: list[dict[str, Any]] = []
-    if SLURM_ENABLED:
-        async with get_db() as db:
-            jobs = await fetch_slurm_jobs(db, limit=200)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="jobs.html",
-        context={
-            "jobs": jobs,
-            "slurm_enabled": SLURM_ENABLED,
-        },
-    )

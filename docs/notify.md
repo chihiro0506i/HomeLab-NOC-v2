@@ -35,12 +35,6 @@ http://<RaspberryPi-IP>:8090
 | `NTFY_URL` | — | ntfy サーバ URL |
 | `NTFY_TOPIC` | — | ntfy トピック |
 | `NTFY_TOKEN` | — | ntfy 認証トークン |
-| `SLURM_ENABLED` | `false` | Slurm 監視を有効にするか |
-| `SLURM_HOST` | — | Slurm サーバのホスト名 |
-| `SLURM_USER` | — | SSH ユーザ名 |
-| `SLURM_PORT` | `22` | SSH ポート |
-| `SLURM_POLL_INTERVAL_ACTIVE` | `60` | ジョブ実行中のポーリング間隔（秒） |
-| `SLURM_POLL_INTERVAL_IDLE` | `300` | ジョブなし時のポーリング間隔（秒） |
 
 ## API リファレンス
 
@@ -86,12 +80,8 @@ Uptime Kuma で監視するためのヘルスチェックです。
 
 クエリパラメータ:
 - `limit` — 件数上限（デフォルト 100）
-- `source` — フィルタ（例: `uptime-kuma`, `slurm`）
+- `source` — フィルタ（例: `uptime-kuma`, `backup`）
 - `severity` — フィルタ（例: `critical`, `error`）
-
-### GET /api/slurm/jobs
-
-Slurm ジョブ履歴を JSON で返します。`SLURM_ENABLED=false` のときは空配列を返します。
 
 ### POST /api/test-notification
 
@@ -182,8 +172,7 @@ Uptime Kuma のカスタム Webhook body に以下のテンプレートを設定
 - **インターネットに公開しないでください**
 - ルータのポート開放は行わないでください
 - `NOTIFY_API_TOKEN` は初期値から必ず変更してください
-- `.env`、`data/`、`secrets/` は Git 管理に含めないでください
-- SSH 秘密鍵はコンテナイメージに COPY せず、volume mount（read-only）で渡してください
+- `.env`、`data/` は Git 管理に含めないでください
 
 ## トラブルシューティング
 

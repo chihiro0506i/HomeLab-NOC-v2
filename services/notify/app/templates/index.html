@@ -26,16 +26,6 @@
     <span class="kpi-value">{{ error_count }}</span>
     <span class="kpi-label">Error</span>
   </div>
-  <div class="kpi-card">
-    <span class="kpi-value">
-      {% if slurm_enabled %}
-        <span class="badge badge-info">Enabled</span>
-      {% else %}
-        <span class="badge badge-muted">Disabled</span>
-      {% endif %}
-    </span>
-    <span class="kpi-label">Slurm Monitoring</span>
-  </div>
 </section>
 
 <!-- Quick links -->
@@ -43,11 +33,6 @@
   <a href="/events" class="qlink-card" id="link-events">
     <h3>Events</h3>
     <p>イベント一覧と詳細を確認</p>
-    <span class="open">Open</span>
-  </a>
-  <a href="/jobs" class="qlink-card" id="link-jobs">
-    <h3>Slurm Jobs</h3>
-    <p>ジョブの状態変化と履歴</p>
     <span class="open">Open</span>
   </a>
 </section>

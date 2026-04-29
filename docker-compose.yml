@@ -115,16 +115,8 @@ services:
       NTFY_URL: ${NTFY_URL:-}
       NTFY_TOPIC: ${NTFY_TOPIC:-}
       NTFY_TOKEN: ${NTFY_TOKEN:-}
-      SLURM_ENABLED: ${SLURM_ENABLED:-false}
-      SLURM_HOST: ${SLURM_HOST:-}
-      SLURM_USER: ${SLURM_USER:-}
-      SLURM_PORT: ${SLURM_PORT:-22}
-      SLURM_SSH_KEY_PATH: /app/secrets/slurm_key
-      SLURM_POLL_INTERVAL_ACTIVE: ${SLURM_POLL_INTERVAL_ACTIVE:-60}
-      SLURM_POLL_INTERVAL_IDLE: ${SLURM_POLL_INTERVAL_IDLE:-300}
     volumes:
       - ./data/notify:/app/data
-      - ./secrets:/app/secrets:ro
     networks:
       - homelab
 

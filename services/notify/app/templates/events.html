@@ -13,7 +13,7 @@
     <label for="filter-source">Source</label>
     <select name="source" id="filter-source">
       <option value="">All</option>
-      {% for s in ["uptime-kuma", "slurm", "backup", "manual", "system"] %}
+      {% for s in ["uptime-kuma", "backup", "manual", "system"] %}
       <option value="{{ s }}" {{ "selected" if filter_source == s else "" }}>{{ s }}</option>
       {% endfor %}
     </select>

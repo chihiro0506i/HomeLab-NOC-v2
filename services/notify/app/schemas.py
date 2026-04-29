@@ -16,11 +16,11 @@ class EventCreate(BaseModel):
 
     source: str = Field(
         ...,
-        examples=["uptime-kuma", "slurm", "backup", "manual", "system"],
+        examples=["uptime-kuma", "backup", "manual", "system"],
     )
     event_type: str = Field(
         ...,
-        examples=["monitor_down", "monitor_up", "job_completed", "test"],
+        examples=["monitor_down", "monitor_up", "test"],
     )
     severity: str = Field(
         ...,
@@ -48,27 +48,6 @@ class EventResponse(BaseModel):
     event_id: int
     notified: bool = False
 
-
-# ---------------------------------------------------------------------------
-# Slurm job
-# ---------------------------------------------------------------------------
-
-class SlurmJobOut(BaseModel):
-    """Single Slurm job as returned by ``GET /api/slurm/jobs``."""
-
-    id: int
-    job_id: str
-    job_name: str | None = None
-    state: str | None = None
-    previous_state: str | None = None
-    partition: str | None = None
-    node: str | None = None
-    submit_time: str | None = None
-    start_time: str | None = None
-    end_time: str | None = None
-    elapsed: str | None = None
-    exit_code: str | None = None
-    last_seen: str
 
 
 # ---------------------------------------------------------------------------
