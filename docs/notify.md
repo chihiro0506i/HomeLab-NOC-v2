@@ -91,6 +91,8 @@ Uptime Kuma で監視するためのヘルスチェックです。
 Uptime Kuma の監視結果を Notify Hub に Webhook で送信し、イベントとして記録する仕組みです。
 これにより、サービスの障害・復旧イベントを Notify Hub のダッシュボードで一覧確認できます。
 
+> **詳細設定手順**: 初心者向けの詳しい設定ステップは、[Uptime Kuma Webhook連携 設定手順](uptime-kuma-webhook-setup.md) を参照してください。
+
 ### 設定手順 (1) Notify Hub 自身の監視
 
 まず、Uptime Kuma に Notify Hub 自体の監視 (HTTP) を追加することをおすすめします。
