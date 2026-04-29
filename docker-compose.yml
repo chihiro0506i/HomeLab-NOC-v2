@@ -102,6 +102,9 @@ services:
     build:
       context: ./services/notify
       dockerfile: Dockerfile
+      args:
+        NOTIFY_UID: ${NOTIFY_UID:-20212}
+        NOTIFY_GID: ${NOTIFY_GID:-20212}
     container_name: homelab-notify
     restart: unless-stopped
     ports:

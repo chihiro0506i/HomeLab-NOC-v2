@@ -35,9 +35,20 @@ mkdir -p \
   images \
   secrets
 
-# NetAlertX はデフォルト UID/GID 20211 で動く．権限設定に失敗しても続行する．
+# 権限設定
 if command -v sudo >/dev/null 2>&1; then
+  # NetAlertX はデフォルト UID/GID 20211 で動く．
   sudo chown -R 20211:20211 data/netalertx 2>/dev/null || true
+
+  # Notify Hub の UID/GID を環境変数から取得（なければ 20212）
+  if [ -f .env ]; then
+    set -a
+    # shellcheck disable=SC1091
+    source .env
+    set +a
+  fi
+  sudo chown -R "${NOTIFY_UID:-20212}:${NOTIFY_GID:-20212}" data/notify 2>/dev/null || true
+  sudo chmod -R u+rwX,g+rwX data/notify 2>/dev/null || true
 fi
 
 chmod -R u+rwX data backups images

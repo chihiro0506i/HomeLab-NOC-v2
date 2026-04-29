@@ -246,10 +246,18 @@ docker compose logs notify
 
 `X-Notify-Token` ヘッダーの値と `.env` の `NOTIFY_API_TOKEN` が一致しているか確認してください。
 
-### データベースエラー
+### データベースエラー (attempt to write a readonly database)
 
-`data/notify/` ディレクトリが存在し、書き込み可能か確認してください。
+`POST /api/events` が `HTTP 500` になり、`docker compose logs notify` で以下のエラーが出る場合：
+`sqlite3.OperationalError: attempt to write a readonly database`
+
+**原因:**
+`data/notify/` の所有者が、コンテナ内の `notify` ユーザ (デフォルト UID/GID: `20212:20212`) と合っていないためです。
+
+**対処法:**
+`setup.sh` を再実行するか、以下のコマンドを手動で実行して権限を修正してください。
 
 ```bash
-ls -la data/notify/
+sudo chown -R 20212:20212 data/notify
+sudo chmod -R u+rwX,g+rwX data/notify
 ```

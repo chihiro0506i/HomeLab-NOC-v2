@@ -13,7 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ ./app/
 
 # Create non-root user and data directory
-RUN groupadd -r notify && useradd -r -g notify notify \
+ARG NOTIFY_UID=20212
+ARG NOTIFY_GID=20212
+
+RUN groupadd -g ${NOTIFY_GID} notify \
+    && useradd -u ${NOTIFY_UID} -g notify -r -s /usr/sbin/nologin notify \
     && mkdir -p /app/data \
     && chown -R notify:notify /app
 
