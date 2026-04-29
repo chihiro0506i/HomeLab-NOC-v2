@@ -30,11 +30,6 @@ http://<RaspberryPi-IP>:8090
 |------|-----------|------|
 | `NOTIFY_PORT` | `8090` | Notify Hub のポート |
 | `NOTIFY_API_TOKEN` | — | API 認証トークン（必須、変更してください） |
-| `NOTIFY_ENABLE_EXTERNAL_SEND` | `false` | 外部通知（ntfy）を有効にするか |
-| `NOTIFY_DEDUP_WINDOW_SECONDS` | `600` | 重複通知抑制の窓（秒） |
-| `NTFY_URL` | — | ntfy サーバ URL |
-| `NTFY_TOPIC` | — | ntfy トピック |
-| `NTFY_TOKEN` | — | ntfy 認証トークン |
 
 ## API リファレンス
 
@@ -50,6 +45,9 @@ Uptime Kuma で監視するためのヘルスチェックです。
 
 イベントを受信して SQLite に保存します。
 `X-Notify-Token` ヘッダーが必須です。
+
+`severity` は `info`, `warning`, `error`, `critical` のいずれかです。
+それ以外の値を送ると 422 Unprocessable Entity が返ります。
 
 **リクエスト例:**
 

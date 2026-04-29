@@ -12,8 +12,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
-# Create data directory (mounted at runtime via volume)
-RUN mkdir -p /app/data
+# Create non-root user and data directory
+RUN groupadd -r notify && useradd -r -g notify notify \
+    && mkdir -p /app/data \
+    && chown -R notify:notify /app
+
+USER notify
 
 EXPOSE 8090
 

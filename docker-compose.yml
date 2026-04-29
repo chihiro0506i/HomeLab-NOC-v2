@@ -110,11 +110,6 @@ services:
       TZ: ${TZ:-Asia/Tokyo}
       NOTIFY_API_TOKEN: ${NOTIFY_API_TOKEN}
       NOTIFY_DB_PATH: /app/data/notify.db
-      NOTIFY_ENABLE_EXTERNAL_SEND: ${NOTIFY_ENABLE_EXTERNAL_SEND:-false}
-      NOTIFY_DEDUP_WINDOW_SECONDS: ${NOTIFY_DEDUP_WINDOW_SECONDS:-600}
-      NTFY_URL: ${NTFY_URL:-}
-      NTFY_TOPIC: ${NTFY_TOPIC:-}
-      NTFY_TOKEN: ${NTFY_TOKEN:-}
     volumes:
       - ./data/notify:/app/data
     networks:

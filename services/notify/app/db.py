@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS events (
     notification_status TEXT
 );
 
+-- Reserved: will be used when external notification (ntfy) is implemented.
+-- Currently not read or written by the application.
 CREATE TABLE IF NOT EXISTS notifications (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     event_id    INTEGER NOT NULL,
@@ -41,8 +43,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     sent_at     TEXT    NOT NULL
 );
 
-
-
+-- Reserved: key-value store for runtime settings (e.g. last poll time).
+-- Currently not read or written by the application.
 CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT

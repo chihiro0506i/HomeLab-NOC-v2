@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+# Allowed severity levels – used as CSS class names (badge-<severity>),
+# so they must be a fixed set of safe identifiers.
+Severity = Literal["info", "warning", "error", "critical"]
 
 
 # ---------------------------------------------------------------------------
@@ -16,23 +20,34 @@ class EventCreate(BaseModel):
 
     source: str = Field(
         ...,
+        min_length=1,
+        max_length=64,
         examples=["uptime-kuma", "backup", "manual", "system"],
     )
     event_type: str = Field(
         ...,
+        min_length=1,
+        max_length=64,
         examples=["monitor_down", "monitor_up", "test"],
     )
-    severity: str = Field(
+    severity: Severity = Field(
         ...,
         examples=["info", "warning", "error", "critical"],
     )
-    title: str = Field(..., examples=["Pi-hole DNS is down"])
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=256,
+        examples=["Pi-hole DNS is down"],
+    )
     message: str | None = Field(
         None,
+        max_length=4096,
         examples=["Uptime Kuma detected Pi-hole DNS failure."],
     )
     dedup_key: str | None = Field(
         None,
+        max_length=256,
         examples=["uptime:pihole_dns:down"],
     )
     metadata: dict[str, Any] | None = Field(
