@@ -11,6 +11,9 @@ from pydantic import BaseModel, Field
 Severity = Literal["info", "warning", "error", "critical"]
 
 
+# Allowed source values
+Source = Literal["uptime-kuma", "backup", "manual", "system"]
+
 # ---------------------------------------------------------------------------
 # Event
 # ---------------------------------------------------------------------------
@@ -18,10 +21,8 @@ Severity = Literal["info", "warning", "error", "critical"]
 class EventCreate(BaseModel):
     """Body accepted by ``POST /api/events``."""
 
-    source: str = Field(
+    source: Source = Field(
         ...,
-        min_length=1,
-        max_length=64,
         examples=["uptime-kuma", "backup", "manual", "system"],
     )
     event_type: str = Field(
