@@ -2,7 +2,7 @@
 
 Raspberry Pi 5 を，自宅ネットワークの「小さな監視センター」として使うための Docker Compose プロジェクトです．
 
-このプロジェクトは，Pi-hole，Unbound，NetAlertX，Uptime Kuma，Portal をまとめて起動します．最初から家全体の DNS を変更するのではなく，まずはラズパイ上で画面を確認し，次に自分の端末だけ Pi-hole を試し，最後に必要なら家全体へ広げる，という安全な段階導入を前提にしています．
+このプロジェクトは，Pi-hole，Unbound，NetAlertX，Uptime Kuma，Portal，Notify Hub をまとめて起動します．最初から家全体の DNS を変更するのではなく，まずはラズパイ上で画面を確認し，次に自分の端末だけ Pi-hole を試し，最後に必要なら家全体へ広げる，という安全な段階導入を前提にしています．
 
 ## 何を作るプロジェクトか
 
@@ -14,7 +14,8 @@ Raspberry Pi 5
   ├─ Pi-hole     : DNS広告・トラッカーブロック
   ├─ Unbound     : Pi-hole用のローカル再帰DNS
   ├─ NetAlertX   : LAN内端末の検出・一覧化
-  └─ Uptime Kuma : サービス死活監視
+  ├─ Uptime Kuma : サービス死活監視
+  └─ Notify Hub  : イベント集約・通知ハブ
 ```
 
 DNS の流れは，基本的に次のようになります．
@@ -102,6 +103,7 @@ Portal      : http://192.168.1.50:8080
 Pi-hole     : http://192.168.1.50:8081/admin
 NetAlertX   : http://192.168.1.50:20211
 Uptime Kuma : http://192.168.1.50:3001
+Notify Hub  : http://192.168.1.50:8090
 ```
 
 ラズパイのIPアドレスは，次で確認できます．
@@ -150,6 +152,9 @@ Phase 4: 必要なら家全体へ広げる
 ./scripts/update.sh         # イメージ更新と再起動
 ./scripts/offline-export.sh # Dockerイメージを tar.gz に保存
 ./scripts/offline-import.sh # 保存済みDockerイメージを読み込み
+./scripts/notify-test-event.sh  # Notify Hub テストイベント送信
+./scripts/notify-status.sh      # Notify Hub ヘルスチェック
+./scripts/notify-logs.sh        # Notify Hub ログ確認
 ```
 
 ## フォルダ構成
@@ -163,13 +168,15 @@ homelab-noc-v2/
 ├── README.md
 ├── portal/
 ├── services/
-│   └── unbound/
+│   ├── unbound/
+│   └── notify/
 ├── configs/
 │   └── unbound/
 ├── scripts/
 ├── docs/
 ├── data/
 ├── backups/
+├── secrets/
 └── images/
 ```
 

@@ -30,8 +30,10 @@ mkdir -p \
   data/netalertx/config \
   data/netalertx/db \
   data/uptime-kuma \
+  data/notify \
   backups \
-  images
+  images \
+  secrets
 
 # NetAlertX はデフォルト UID/GID 20211 で動く．権限設定に失敗しても続行する．
 if command -v sudo >/dev/null 2>&1; then

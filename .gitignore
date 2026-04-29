@@ -9,6 +9,10 @@ backups/
 images/*.tar
 images/*.tar.gz
 
+# Python
+__pycache__/
+*.pyc
+
 # editor / OS
 .DS_Store
 Thumbs.db
@@ -17,3 +21,10 @@ Thumbs.db
 
 # logs
 *.log
+
+# secrets & keys
+secrets/
+*.db
+*.sqlite
+*.key
+*.pem

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>Events</h1>
+  <p class="lead">保存済みイベントの履歴です。</p>
+</section>
+
+<!-- Filters -->
+<section class="filter-bar">
+  <form method="get" action="/events" class="filter-form" id="filter-form">
+    <label for="filter-source">Source</label>
+    <select name="source" id="filter-source">
+      <option value="">All</option>
+      {% for s in ["uptime-kuma", "slurm", "backup", "manual", "system"] %}
+      <option value="{{ s }}" {{ "selected" if filter_source == s else "" }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="filter-severity">Severity</label>
+    <select name="severity" id="filter-severity">
+      <option value="">All</option>
+      {% for s in ["critical", "error", "warning", "info"] %}
+      <option value="{{ s }}" {{ "selected" if filter_severity == s else "" }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" id="filter-apply">Apply</button>
+  </form>
+</section>
+
+<!-- Events table -->
+<section class="section-block">
+  {% if events %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Time</th>
+          <th>Severity</th>
+          <th>Source</th>
+          <th>Type</th>
+          <th>Title</th>
+          <th>Message</th>
+          <th>Dedup Key</th>
+          <th>Notified</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr class="row-{{ e.severity }}">
+          <td>{{ e.id }}</td>
+          <td class="cell-time">{{ e.created_at[:19] }}</td>
+          <td><span class="badge badge-{{ e.severity }}">{{ e.severity }}</span></td>
+          <td>{{ e.source }}</td>
+          <td>{{ e.event_type }}</td>
+          <td>{{ e.title }}</td>
+          <td class="cell-msg">{{ e.message or "" }}</td>
+          <td class="cell-dedup">{{ e.dedup_key or "" }}</td>
+          <td>{{ e.notified_at[:19] if e.notified_at else "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>イベントがまだ記録されていません。</p>
+    <p class="muted">POST /api/events でイベントを送信してください。</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

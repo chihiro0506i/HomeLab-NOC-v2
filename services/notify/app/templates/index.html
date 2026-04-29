@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="hero-compact">
+  <div>
+    <p class="eyebrow">HomeLab-NOC-v2</p>
+    <h1>Notify Hub</h1>
+    <p class="lead">
+      イベントの集約・通知・履歴をひとつのダッシュボードで管理します。
+    </p>
+  </div>
+</section>
+
+<!-- KPI cards -->
+<section class="kpi-row" aria-label="summary statistics">
+  <div class="kpi-card">
+    <span class="kpi-value">{{ total_events }}</span>
+    <span class="kpi-label">Total Events</span>
+  </div>
+  <div class="kpi-card kpi-critical">
+    <span class="kpi-value">{{ critical_count }}</span>
+    <span class="kpi-label">Critical</span>
+  </div>
+  <div class="kpi-card kpi-error">
+    <span class="kpi-value">{{ error_count }}</span>
+    <span class="kpi-label">Error</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-value">
+      {% if slurm_enabled %}
+        <span class="badge badge-info">Enabled</span>
+      {% else %}
+        <span class="badge badge-muted">Disabled</span>
+      {% endif %}
+    </span>
+    <span class="kpi-label">Slurm Monitoring</span>
+  </div>
+</section>
+
+<!-- Quick links -->
+<section class="quick-links">
+  <a href="/events" class="qlink-card" id="link-events">
+    <h3>Events</h3>
+    <p>イベント一覧と詳細を確認</p>
+    <span class="open">Open</span>
+  </a>
+  <a href="/jobs" class="qlink-card" id="link-jobs">
+    <h3>Slurm Jobs</h3>
+    <p>ジョブの状態変化と履歴</p>
+    <span class="open">Open</span>
+  </a>
+</section>
+
+<!-- Recent events -->
+{% if recent_events %}
+<section class="section-block">
+  <h2>Recent Events</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Severity</th>
+          <th>Source</th>
+          <th>Title</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in recent_events %}
+        <tr>
+          <td class="cell-time">{{ e.created_at[:19] }}</td>
+          <td><span class="badge badge-{{ e.severity }}">{{ e.severity }}</span></td>
+          <td>{{ e.source }}</td>
+          <td>{{ e.title }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="table-footer"><a href="/events">View all events →</a></p>
+</section>
+{% endif %}
+{% endblock %}
