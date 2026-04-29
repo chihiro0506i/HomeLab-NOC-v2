@@ -1,26 +1,26 @@
-# Windows から Raspberry Pi へ送る方法
+# Windows から Raspberry Pi へ転送する方法
 
 ## scp を使う場合
 
-Windows PowerShell で実行する．
+Windows の PowerShell で次のコマンドを実行する．
 
 ```powershell
 scp .\homelab-noc-v2 pi@<RaspberryPi-IP>:/home/pi/
 ```
 
-ラズパイにSSHログインする．
+ラズパイに SSH でログインする．
 
 ```powershell
 ssh pi@<RaspberryPi-IP>
 ```
 
-ラズパイ側で展開する．
+ラズパイ側でセットアップを行う．
 
 ```bash
 cd homelab-noc-v2
 ./scripts/setup.sh
 ```
 
-## USBメモリを使う場合
+## USB メモリを使う場合
 
-WindowsでzipをUSBメモリにコピーし，ラズパイ側で展開してもよい．ただし，最終的にはラズパイ上でDockerイメージを取得するため，初回はインターネット接続が必要になる．
+Windows で zip ファイルを USB メモリにコピーし，ラズパイ側で展開してもよい．ただし，初回は Docker イメージの取得にインターネット接続が必要になる．

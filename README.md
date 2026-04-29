@@ -1,10 +1,10 @@
 # homelab-noc v2
 
-Raspberry Pi 5 を，自宅ネットワークの「小さな監視センター」として使うための Docker Compose プロジェクトである．
+Raspberry Pi 5 を自宅ネットワークの「小さな監視センター」として使うための Docker Compose プロジェクトです．
 
-このプロジェクトは，Pi-hole，Unbound，NetAlertX，Uptime Kuma，Portal，Notify Hub をまとめて起動する．最初から家全体の DNS を変更するのではなく，まずはラズパイ上で画面を確認し，次に自分の端末だけ Pi-hole を試し，最後に必要なら家全体へ広げる，という安全な段階導入を前提にしている．
+Pi-hole，Unbound，NetAlertX，Uptime Kuma，Portal をまとめて起動します．最初から家全体の DNS を変更するのではなく，まずはラズパイ上で画面を確認し，次に自分の端末だけで Pi-hole を試し，最後に必要であれば家全体へ広げる，という段階的な導入を前提としています．
 
-## 何を作るプロジェクトか
+## 何を作るか
 
 このプロジェクトで作るものは，次のようなホームラボである．
 
@@ -18,7 +18,7 @@ Raspberry Pi 5
   └─ Notify Hub  : イベント集約・通知ハブ
 ```
 
-DNS の流れは，基本的に次のようになる．
+DNS の流れは次のとおりです．
 
 ```text
 PC / iPhone / iPad
@@ -30,11 +30,11 @@ Unbound
 インターネット上の権威DNSサーバ群
 ```
 
-Unbound を使っても，インターネット上の名前を解決する以上，完全に外部通信ゼロにはなりません．ただし，Google DNS や Cloudflare DNS などの特定の外部DNS事業者に問い合わせ履歴をまとめて渡す構成ではなくなる．
+Unbound を使っても，インターネット上の名前を解決する以上，完全に外部通信ゼロにはなりません．ただし，Google DNS や Cloudflare DNS などの特定の外部 DNS 事業者に問い合わせ履歴をまとめて渡す構成ではなくなる．
 
 ## 最初に大事な注意
 
-このプロジェクトは，起動するだけなら家全体のインターネット設定を勝手に変えません．危なくなりやすいのは，次のような操作をしたときである．
+このプロジェクトは，起動するだけでは家全体のインターネット設定を変更しません．危なくなりやすいのは，次のような操作をしたときである．
 
 ```text
 危険な操作
@@ -45,7 +45,7 @@ Unbound を使っても，インターネット上の名前を解決する以上
 ・初期パスワードのまま使う
 ```
 
-特に，DNSサーバや管理画面をインターネットに直接公開してはいけません．自宅LAN内だけで使ってこと．外出先から見たい場合は，ポート開放ではなく Tailscale や WireGuard などの VPN を使う方針にしてこと．
+特に，DNS サーバや管理画面をインターネットに直接公開してはいけません．自宅 LAN 内でのみ使用してください．外出先からアクセスしたい場合は，ポート開放ではなく Tailscale や WireGuard などの VPN を使用してください．
 
 ## 必要なもの
 
@@ -62,11 +62,11 @@ Unbound を使っても，インターネット上の名前を解決する以上
 ・Docker Compose Plugin
 ```
 
-Docker が未導入の場合は，まず公式手順に従って Docker を導入してこと．このプロジェクトの `scripts/setup.sh` は Docker の存在確認はしますが，勝手に Docker をインストールする設計にはしていません．
+Docker が未導入の場合は，まず公式手順に従って Docker を導入してください．`scripts/setup.sh` は Docker の存在確認を行いますが，Docker を自動インストールする設計にはしていません．
 
 ## 使い方
 
-ラズパイにディレクトリを置きる．
+ラズパイにディレクトリを配置します．
 
 ```bash
 cd homelab-noc-v2
@@ -113,27 +113,27 @@ hostname -I
 ```
 
 ## 安全な導入順序
-
 最初は，家全体のDNSを変更しないでこと．次の順番で進める．
+
 
 ```text
 Phase 1: 起動確認
-  ・Portal，Pi-hole，NetAlertX，Uptime Kuma が開けるか確認する
-  ・ルータや端末のDNS設定はまだ変えない
+  ・Portal，Pi-hole，NetAlertX，Uptime Kuma が開けることを確認する
+  ・ルータや端末のDNS設定はまだ変更しない
 
 Phase 2: ローカル監視
-  ・Uptime Kuma で Portal や Pi-hole のURLを監視する
-  ・NetAlertX で自宅LAN内の端末を確認する
+  ・Uptime Kuma で Portal や Pi-hole の URL を監視する
+  ・NetAlertX で自宅 LAN 内の端末を確認する
   ・外部通知はまだ設定しない
 
-Phase 3: 自分の端末だけ Pi-hole を試す
-  ・Windows PC だけ DNS をラズパイIPへ向ける
+Phase 3: 自分の端末だけで Pi-hole を試す
+  ・Windows PC の DNS をラズパイ IP に向ける
   ・Pi-hole の Query Log を確認する
-  ・問題があれば Windows の DNS 設定を自動に戻す
+  ・問題があれば Windows の DNS 設定を「自動」に戻す
 
-Phase 4: 必要なら家全体へ広げる
-  ・ルータの DHCP で DNS としてラズパイIPを配布する
-  ・ラズパイ停止時に名前解決できなくなる可能性を理解してから行う
+Phase 4: 必要であれば家全体へ広げる
+  ・ルータの DHCP で DNS としてラズパイ IP を配布する
+  ・ラズパイ停止時に名前解決ができなくなるリスクを理解したうえで行う
 ```
 
 ## ドキュメント
@@ -193,7 +193,7 @@ homelab-noc-v2/
 
 `data/`，`backups/`，`images/`，`.env` は GitHub に公開しないでこと．
 
-## OSSについて
+## OSS について
 
 このプロジェクトは，複数のOSSを組み合わせるテンプレートである．Pi-hole，NetAlertX，Uptime Kuma などの本体コードをこのzip内に同梱しているわけではない．初回起動時に Docker が各イメージを取得する．
 

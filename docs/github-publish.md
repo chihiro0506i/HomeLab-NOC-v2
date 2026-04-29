@@ -1,4 +1,4 @@
-# GitHub公開手順
+# GitHub 公開手順
 
 ## 公開前チェック
 
@@ -6,7 +6,7 @@
 git status
 ```
 
-次のファイルやフォルダが表示されていたら，公開してはいけない．
+次のファイルやフォルダが表示された場合は，公開してはいけない．
 
 ```text
 .env
@@ -15,7 +15,7 @@ backups/
 images/
 ```
 
-## 初回公開例
+## 初回公開の例
 
 ```bash
 git init
@@ -28,4 +28,4 @@ git push -u origin main
 
 ## LICENSE の変更
 
-`LICENSE` の `YOUR_NAME` は，自分の名前またはGitHubハンドルに変更する．
+`LICENSE` 内の `YOUR_NAME` を，自分の名前または GitHub ハンドルに変更すること．

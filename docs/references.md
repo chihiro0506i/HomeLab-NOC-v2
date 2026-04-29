@@ -1,6 +1,6 @@
 # 参照プロジェクトとライセンス
 
-このテンプレートは複数のOSSを組み合わせるためのプロジェクトである．各OSS本体のライセンスは，それぞれの公式リポジトリを確認すること．
+このテンプレートは複数の OSS を組み合わせて使うためのプロジェクトである．各 OSS 本体のライセンスについては，それぞれの公式リポジトリを参照すること．
 
 ```text
 Pi-hole
@@ -9,7 +9,7 @@ Pi-hole
 
 Unbound
   役割: 再帰DNS resolver
-  このテンプレートでは Alpine Linux 上に unbound パッケージを入れるDockerfileを用意している
+  このテンプレートでは Alpine Linux 上に unbound パッケージを導入する Dockerfile を用意している
 
 NetAlertX
   役割: LAN内端末検出・ネットワーク可視化

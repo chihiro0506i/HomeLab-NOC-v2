@@ -2,7 +2,7 @@
 
 ## 画面が開けない
 
-まず状態を確認する．
+まずサービスの状態を確認する．
 
 ```bash
 ./scripts/status.sh
@@ -10,29 +10,29 @@
 ./scripts/show-urls.sh
 ```
 
-ラズパイのIPアドレスが変わっている可能性があるため，次も確認する．
+ラズパイの IP アドレスが変わっている可能性があるため，次のコマンドでも確認する．
 
 ```bash
 hostname -I
 ```
 
-## 53番ポートが競合する
+## 53 番ポートが競合する
 
-Pi-hole はDNS用に53番ポートを使う．既に別のDNSサービスが動いている場合，起動できないことがある．
+Pi-hole は DNS 用に 53 番ポートを使用する．すでに別の DNS サービスが動作している場合，起動できないことがある．
 
 ```bash
 ./scripts/preflight.sh
 ```
 
-systemd-resolved が競合することがあるが，いきなり停止せず，まずログを確認する．
+systemd-resolved が競合する場合があるが，いきなり停止せず，まずログを確認すること．
 
-## DNSが引けない
+## DNS が引けない
 
 ```bash
 ./scripts/check-dns.sh example.com
 ```
 
-Pi-hole が起動しているか，Unbound が起動しているかを確認する．
+Pi-hole と Unbound がそれぞれ起動しているかを確認する．
 
 ```bash
 docker compose ps
@@ -40,7 +40,7 @@ docker compose logs pihole
 docker compose logs unbound
 ```
 
-## NetAlertX に端末が出ない
+## NetAlertX に端末が表示されない
 
 `.env` の `HOME_SUBNET` と `LAN_INTERFACE` が自宅環境に合っているか確認する．
 
@@ -48,8 +48,8 @@ docker compose logs unbound
 ./scripts/detect-network.sh
 ```
 
-有線LANなら `eth0`，Wi-Fiなら `wlan0` が多い．ただし環境によって異なる．
+有線 LAN の場合は `eth0`，Wi-Fi の場合は `wlan0` であることが多い．ただし環境によって異なる．
 
-## Pi-hole を止めたらネットが使えない
+## Pi-hole を停止したらインターネットが使えない
 
-端末やルータのDNSをPi-holeに向けている場合，Pi-hole停止中は名前解決できない可能性がある．端末のDNS設定を「自動」に戻すか，ルータのDNS設定を元に戻す．
+端末やルータの DNS を Pi-hole に向けている場合，Pi-hole の停止中は名前解決ができなくなる可能性がある．端末の DNS 設定を「自動」に戻すか，ルータの DNS 設定を元に戻すこと．
