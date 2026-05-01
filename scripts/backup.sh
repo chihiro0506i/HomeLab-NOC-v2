@@ -34,8 +34,36 @@ notify_backup_event() {
   fi
 
   local payload
-  payload="$(printf '{"source":"backup","event_type":"%s","severity":"%s","title":"%s","message":"%s","dedup_key":"%s","metadata":{"file":"%s","size_bytes":%s,"timestamp":"%s"}}' \
-    "$status" "$severity" "$title" "$message" "$dedup_key" "$OUT" "$size_bytes" "$TS")"
+  if command -v python3 >/dev/null 2>&1; then
+    payload="$(
+      BACKUP_STATUS="$status" \
+      BACKUP_SEVERITY="$severity" \
+      BACKUP_TITLE="$title" \
+      BACKUP_MESSAGE="$message" \
+      BACKUP_DEDUP_KEY="$dedup_key" \
+      BACKUP_FILE="$OUT" \
+      BACKUP_SIZE_BYTES="$size_bytes" \
+      BACKUP_TIMESTAMP="$TS" \
+      python3 -c 'import json, os
+payload = {
+    "source": "backup",
+    "event_type": os.environ["BACKUP_STATUS"],
+    "severity": os.environ["BACKUP_SEVERITY"],
+    "title": os.environ["BACKUP_TITLE"],
+    "message": os.environ["BACKUP_MESSAGE"],
+    "dedup_key": os.environ["BACKUP_DEDUP_KEY"],
+    "metadata": {
+        "file": os.environ["BACKUP_FILE"],
+        "size_bytes": int(os.environ["BACKUP_SIZE_BYTES"]),
+        "timestamp": os.environ["BACKUP_TIMESTAMP"],
+    },
+}
+print(json.dumps(payload, ensure_ascii=False))'
+    )"
+  else
+    echo "[backup] WARNING: python3 is not available; skip Notify Hub event."
+    return 0
+  fi
 
   local http_code
   http_code="$(curl -s -o /dev/null -w "%{http_code}" \
