@@ -57,6 +57,20 @@ def dedup_window_seconds() -> int:
     return max(0, value)
 
 
+def parse_http_timeout_seconds() -> float:
+    """Return a safe outbound HTTP timeout in seconds."""
+    raw = os.getenv("NOTIFY_HTTP_TIMEOUT_SECONDS", "5")
+    try:
+        value = float(raw)
+    except ValueError:
+        logger.warning("Invalid NOTIFY_HTTP_TIMEOUT_SECONDS=%r; using 5.0", raw)
+        return 5.0
+    if value <= 0:
+        logger.warning("Invalid NOTIFY_HTTP_TIMEOUT_SECONDS=%r; using 5.0", raw)
+        return 5.0
+    return value
+
+
 def dedup_since_iso(now: datetime | None = None) -> str | None:
     """Return ISO timestamp used as the start of the dedup window."""
     seconds = dedup_window_seconds()
@@ -133,7 +147,7 @@ async def send_notification(event: dict[str, Any]) -> NotificationDecision:
         f"Dedup: {event.get('dedup_key') or '-'}"
     )
 
-    timeout = float(os.getenv("NOTIFY_HTTP_TIMEOUT_SECONDS", "5"))
+    timeout = parse_http_timeout_seconds()
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(url, content=body.encode("utf-8"), headers=headers)
