@@ -1,0 +1,13 @@
+{
+  "source": "uptime-kuma",
+  "event_type": "monitor_event",
+  "severity": "info",
+  "title": "{{ name }} - {{ status }}",
+  "message": "{{ msg }}",
+  "dedup_key": "uptime:{{ name }}:{{ status }}",
+  "metadata": {
+    "monitor_name": "{{ name }}",
+    "status": "{{ status }}",
+    "target": "{{ hostnameOrURL }}"
+  }
+}

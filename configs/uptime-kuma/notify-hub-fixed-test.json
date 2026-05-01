@@ -1,0 +1,12 @@
+{
+  "source": "uptime-kuma",
+  "event_type": "monitor_down",
+  "severity": "critical",
+  "title": "Uptime Kuma test monitor is DOWN",
+  "message": "This is a fixed test payload from Uptime Kuma.",
+  "dedup_key": "uptime:test-monitor:down",
+  "metadata": {
+    "monitor_name": "Uptime Kuma test monitor",
+    "test": true
+  }
+}

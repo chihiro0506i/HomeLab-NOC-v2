@@ -1,0 +1,13 @@
+{
+  "source": "uptime-kuma",
+  "event_type": "{% if status contains 'Down' %}monitor_down{% elsif status contains 'Up' %}monitor_up{% else %}monitor_event{% endif %}",
+  "severity": "{% if status contains 'Down' %}critical{% elsif status contains 'Up' %}info{% else %}warning{% endif %}",
+  "title": "{{ name }} - {{ status }}",
+  "message": "{{ msg }}",
+  "dedup_key": "uptime:{{ name }}:{{ status }}",
+  "metadata": {
+    "monitor_name": "{{ name }}",
+    "status": "{{ status }}",
+    "target": "{{ hostnameOrURL }}"
+  }
+}
