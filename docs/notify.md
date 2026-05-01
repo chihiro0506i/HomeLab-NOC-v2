@@ -56,6 +56,8 @@ NOTIFY_NTFY_TOKEN=
 ```
 
 認証つき ntfy を使う場合は，`NOTIFY_NTFY_TOKEN` に Bearer token を設定する．
+公開 ntfy topic を使う場合は，topic 名を推測されにくい長い値にすること．
+通知本文には監視対象名，URL，IP アドレスなどのローカルネットワーク情報が含まれる可能性があるため，公開 topic では本文に含める情報を必要最小限にすること．
 
 外部通知に失敗しても，イベント保存自体は成功する．送信結果はイベント一覧の `Notify Status` と DB の `notifications` テーブルに保存される．
 
@@ -315,6 +317,7 @@ curl -s http://localhost:8090/api/events | python3 -m json.tool
 - ルータのポート開放は行わないこと
 - `NOTIFY_API_TOKEN` は初期値から必ず変更すること
 - 公開 ntfy topic を使う場合は，推測されにくい topic 名にすること
+- 公開 ntfy topic へ送る通知本文には，ローカル IP アドレスや監視対象 URL が含まれる可能性があることを理解して使うこと
 - `.env`，`data/` は Git 管理に含めないこと
 
 ## トラブルシューティング

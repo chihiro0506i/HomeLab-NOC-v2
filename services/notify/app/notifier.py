@@ -150,7 +150,7 @@ async def send_notification(event: dict[str, Any]) -> NotificationDecision:
     event_type = str(event.get("event_type") or "event")
 
     headers = {
-        "Title": title,
+        "Title": "HomeLab Alert",
         "Priority": _priority_for_severity(severity),
         "Tags": _tags_for_event(event),
         "X-Notify-Source": str(event.get("source") or "unknown"),
@@ -162,6 +162,7 @@ async def send_notification(event: dict[str, Any]) -> NotificationDecision:
         headers["Authorization"] = f"Bearer {token}"
 
     body = (
+        f"{title}\n\n"
         f"{message}\n\n"
         f"Severity: {severity}\n"
         f"Source: {event.get('source')}\n"
