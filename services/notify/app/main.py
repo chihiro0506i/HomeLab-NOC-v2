@@ -33,6 +33,7 @@ from .db import (
 from .notifier import (
     configured_channel,
     dedup_since_iso,
+    notification_enabled,
     send_notification,
     should_notify,
 )
@@ -157,47 +158,69 @@ async def create_event(
         notified_at: str | None = None
         if should_notify(body.severity):
             channel = configured_channel()
-            since = dedup_since_iso()
-            if (
-                channel != "none"
-                and dedup_key
-                and since
-                and await has_recent_sent_notification(
-                    db,
-                    dedup_key=dedup_key,
-                    channel=channel,
-                    since=since,
-                )
-            ):
+            if not notification_enabled():
                 sent_at = _now_iso()
-                notification_status = "deduplicated"
+                notification_status = "disabled"
                 await insert_notification(
                     db,
                     event_id=event_id,
-                    channel=channel,
+                    channel="none",
                     status=notification_status,
-                    response=f"Matching sent notification exists since {since}",
+                    response="Outbound notifications are disabled",
                     sent_at=sent_at,
                 )
-                logger.info(
-                    "Notification deduplicated id=%d channel=%s dedup_key=%s",
-                    event_id, channel, dedup_key,
+            elif channel == "none":
+                sent_at = _now_iso()
+                notification_status = "unconfigured"
+                await insert_notification(
+                    db,
+                    event_id=event_id,
+                    channel="none",
+                    status=notification_status,
+                    response="NOTIFY_NTFY_URL is not configured",
+                    sent_at=sent_at,
                 )
             else:
-                decision = await send_notification(event)
-                sent_at = _now_iso()
-                notification_status = decision.status
-                notified = decision.notified
-                if notified:
-                    notified_at = sent_at
-                await insert_notification(
-                    db,
-                    event_id=event_id,
-                    channel=decision.channel,
-                    status=decision.status,
-                    response=decision.response,
-                    sent_at=sent_at,
-                )
+                since = dedup_since_iso()
+                if (
+                    dedup_key
+                    and since
+                    and await has_recent_sent_notification(
+                        db,
+                        dedup_key=dedup_key,
+                        channel=channel,
+                        since=since,
+                    )
+                ):
+                    sent_at = _now_iso()
+                    notification_status = "deduplicated"
+                    await insert_notification(
+                        db,
+                        event_id=event_id,
+                        channel=channel,
+                        status=notification_status,
+                        response=f"Matching sent notification exists since {since}",
+                        sent_at=sent_at,
+                    )
+                    logger.info(
+                        "Notification deduplicated id=%d channel=%s dedup_key=%s",
+                        event_id, channel, dedup_key,
+                    )
+                else:
+                    decision = await send_notification(event)
+                    sent_at = _now_iso()
+                    notification_status = decision.status
+                    notified = decision.notified
+                    if notified:
+                        notified_at = sent_at
+                    await insert_notification(
+                        db,
+                        event_id=event_id,
+                        channel=decision.channel,
+                        status=decision.status,
+                        response=decision.response,
+                        sent_at=sent_at,
+                    )
         await update_event_notification_status(
             db,
             event_id=event_id,
