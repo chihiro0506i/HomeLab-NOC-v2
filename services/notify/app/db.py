@@ -214,6 +214,53 @@ async def fetch_events(
     return [dict(row) for row in rows]
 
 
+async def fetch_notifications(
+    db: aiosqlite.Connection,
+    *,
+    limit: int = 100,
+    status: str | None = None,
+    channel: str | None = None,
+) -> list[dict[str, Any]]:
+    """Return notification attempts with their source event context."""
+    clauses: list[str] = []
+    params: list[Any] = []
+    if status:
+        clauses.append("n.status = ?")
+        params.append(status)
+    if channel:
+        clauses.append("n.channel = ?")
+        params.append(channel)
+
+    where = ""
+    if clauses:
+        where = "WHERE " + " AND ".join(clauses)
+
+    query = f"""
+        SELECT
+            n.id,
+            n.event_id,
+            n.channel,
+            n.status,
+            n.response,
+            n.sent_at,
+            e.source,
+            e.event_type,
+            e.severity,
+            e.title,
+            e.dedup_key
+          FROM notifications AS n
+          JOIN events AS e ON e.id = n.event_id
+          {where}
+         ORDER BY n.id DESC
+         LIMIT ?
+    """
+    params.append(limit)
+
+    cursor = await db.execute(query, params)
+    rows = await cursor.fetchall()
+    return [dict(row) for row in rows]
+
+
 
 async def count_events(
     db: aiosqlite.Connection,

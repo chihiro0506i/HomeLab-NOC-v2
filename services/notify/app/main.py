@@ -22,6 +22,7 @@ from .db import (
     count_events,
     fetch_event_by_id,
     fetch_events,
+    fetch_notifications,
     get_db,
     has_recent_sent_notification,
     init_db,
@@ -228,6 +229,19 @@ async def list_events(
         return await fetch_events(db, limit=limit, source=source, severity=severity)
 
 
+@app.get("/api/notifications", tags=["notifications"])
+async def list_notifications(
+    limit: int = Query(100, ge=1, le=1000),
+    status: str | None = Query(None),
+    channel: str | None = Query(None),
+) -> list[dict[str, Any]]:
+    """Return outbound notification attempts as JSON (newest first)."""
+    async with get_db() as db:
+        return await fetch_notifications(
+            db, limit=limit, status=status, channel=channel,
+        )
+
+
 @app.post(
     "/api/test-notification",
     response_model=EventResponse,
@@ -302,5 +316,29 @@ async def page_events(
             "events": events,
             "filter_source": source or "",
             "filter_severity": severity or "",
+        },
+    )
+
+
+@app.get("/notifications", response_class=HTMLResponse, include_in_schema=False)
+async def page_notifications(
+    request: Request,
+    limit: int = Query(100, ge=1, le=1000),
+    status: str | None = Query(None),
+    channel: str | None = Query(None),
+) -> HTMLResponse:
+    """Notification attempt history page."""
+    async with get_db() as db:
+        notifications = await fetch_notifications(
+            db, limit=limit, status=status, channel=channel,
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="notifications.html",
+        context={
+            "notifications": notifications,
+            "filter_status": status or "",
+            "filter_channel": channel or "",
         },
     )

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>Notifications</h1>
+  <p class="lead">外部通知の送信履歴です。</p>
+</section>
+
+<section class="filter-bar">
+  <form method="get" action="/notifications" class="filter-form" id="notification-filter-form">
+    <label for="filter-status">Status</label>
+    <select name="status" id="filter-status">
+      <option value="">All</option>
+      {% for s in ["sent", "failed", "deduplicated", "unconfigured", "disabled"] %}
+      <option value="{{ s }}" {{ "selected" if filter_status == s else "" }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="filter-channel">Channel</label>
+    <select name="channel" id="filter-channel">
+      <option value="">All</option>
+      {% for c in ["ntfy", "none"] %}
+      <option value="{{ c }}" {{ "selected" if filter_channel == c else "" }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" id="filter-apply">Apply</button>
+  </form>
+</section>
+
+<section class="section-block">
+  {% if notifications %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Channel</th>
+          <th>Event</th>
+          <th>Severity</th>
+          <th>Source</th>
+          <th>Title</th>
+          <th>Response</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in notifications %}
+        <tr>
+          <td>{{ n.id }}</td>
+          <td class="cell-time">{{ n.sent_at[:19] }}</td>
+          <td><span class="badge badge-muted">{{ n.status }}</span></td>
+          <td>{{ n.channel }}</td>
+          <td><a href="/events?source={{ n.source }}">{{ n.event_id }}</a></td>
+          <td><span class="badge badge-{{ n.severity }}">{{ n.severity }}</span></td>
+          <td>{{ n.source }}</td>
+          <td>{{ n.title }}</td>
+          <td class="cell-response">{{ n.response or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>通知履歴がまだ記録されていません。</p>
+    <p class="muted">通知対象のイベントが発生するとここに表示されます。</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

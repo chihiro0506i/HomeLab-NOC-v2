@@ -366,6 +366,15 @@ tbody tr:hover {
   color: var(--muted);
 }
 
+.cell-response {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .table-footer {
   margin: 12px 0 0;
   font-size: 0.9rem;

@@ -26,6 +26,7 @@ nano .env
 ```
 
 バックアップには `.env` と `data/` が含まれるため，パスワードやネットワーク情報が含まれる可能性がある．GitHub には公開しないこと．
+Notify Hub が起動していて `NOTIFY_API_TOKEN` が設定されている場合，バックアップの成功/失敗は Notify Hub にイベントとして記録される．失敗イベントは `severity=error` のため，既定設定では ntfy 通知対象になる．
 
 ## 更新
 
