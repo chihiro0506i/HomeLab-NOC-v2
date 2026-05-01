@@ -32,15 +32,15 @@ CREATE TABLE IF NOT EXISTS events (
     notification_status TEXT
 );
 
--- Reserved: will be used when external notification (ntfy) is implemented.
--- Currently not read or written by the application.
+-- Outbound notification attempt history.
 CREATE TABLE IF NOT EXISTS notifications (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     event_id    INTEGER NOT NULL,
     channel     TEXT    NOT NULL,
     status      TEXT    NOT NULL,
     response    TEXT,
-    sent_at     TEXT    NOT NULL
+    sent_at     TEXT    NOT NULL,
+    FOREIGN KEY(event_id) REFERENCES events(id)
 );
 
 -- Reserved: key-value store for runtime settings (e.g. last poll time).
@@ -49,6 +49,12 @@ CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_events_dedup_key
+    ON events(dedup_key);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_event_status
+    ON notifications(event_id, status, sent_at);
 """
 
 
@@ -99,6 +105,84 @@ async def insert_event(
     await db.commit()
     assert cursor.lastrowid is not None
     return cursor.lastrowid
+
+
+async def fetch_event_by_id(
+    db: aiosqlite.Connection,
+    event_id: int,
+) -> dict[str, Any] | None:
+    """Return a single event by id."""
+    cursor = await db.execute("SELECT * FROM events WHERE id = ?", (event_id,))
+    row = await cursor.fetchone()
+    return dict(row) if row else None
+
+
+async def update_event_notification_status(
+    db: aiosqlite.Connection,
+    *,
+    event_id: int,
+    notified_at: str | None,
+    notification_status: str,
+) -> None:
+    """Store the latest notification state on an event row."""
+    await db.execute(
+        """
+        UPDATE events
+           SET notified_at = ?,
+               notification_status = ?
+         WHERE id = ?
+        """,
+        (notified_at, notification_status, event_id),
+    )
+    await db.commit()
+
+
+async def insert_notification(
+    db: aiosqlite.Connection,
+    *,
+    event_id: int,
+    channel: str,
+    status: str,
+    response: str | None,
+    sent_at: str,
+) -> int:
+    """Insert one notification attempt row and return its id."""
+    cursor = await db.execute(
+        """
+        INSERT INTO notifications
+            (event_id, channel, status, response, sent_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (event_id, channel, status, response, sent_at),
+    )
+    await db.commit()
+    assert cursor.lastrowid is not None
+    return cursor.lastrowid
+
+
+async def has_recent_sent_notification(
+    db: aiosqlite.Connection,
+    *,
+    dedup_key: str,
+    channel: str,
+    since: str,
+) -> bool:
+    """Return whether a matching notification was sent since a timestamp."""
+    cursor = await db.execute(
+        """
+        SELECT 1
+          FROM notifications AS n
+          JOIN events AS e ON e.id = n.event_id
+         WHERE e.dedup_key = ?
+           AND n.channel = ?
+           AND n.status = 'sent'
+           AND n.sent_at >= ?
+         LIMIT 1
+        """,
+        (dedup_key, channel, since),
+    )
+    row = await cursor.fetchone()
+    return row is not None
 
 
 async def fetch_events(
@@ -154,5 +238,22 @@ async def count_events(
     cursor = await db.execute(
         f"SELECT COUNT(*) FROM events {where}", params,
     )
+    row = await cursor.fetchone()
+    return row[0] if row else 0
+
+
+async def count_notifications(
+    db: aiosqlite.Connection,
+    *,
+    status: str | None = None,
+) -> int:
+    """Count notification attempts, optionally filtered by status."""
+    if status:
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM notifications WHERE status = ?",
+            (status,),
+        )
+    else:
+        cursor = await db.execute("SELECT COUNT(*) FROM notifications")
     row = await cursor.fetchone()
     return row[0] if row else 0

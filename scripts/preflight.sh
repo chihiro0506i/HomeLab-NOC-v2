@@ -33,6 +33,15 @@ if [[ "${PIHOLE_PASSWORD:-}" == "CHANGE_ME_STRONG_PASSWORD" || "${PIHOLE_PASSWOR
   exit 1
 fi
 
+if [[ "${NOTIFY_API_TOKEN:-}" == "CHANGE_ME_NOTIFY_TOKEN" || -z "${NOTIFY_API_TOKEN:-}" ]]; then
+  echo "[preflight] ERROR: NOTIFY_API_TOKEN が初期値のままです．.env を編集してください．" >&2
+  exit 1
+fi
+
+if [[ "${NOTIFY_OUTBOUND_ENABLED:-true}" == "true" && -z "${NOTIFY_NTFY_URL:-}" ]]; then
+  echo "[preflight] NOTE: NOTIFY_NTFY_URL が未設定です．Notify Hub はイベント保存のみ行い，外部通知は送信しません．"
+fi
+
 if ! ip link show "$LAN_INTERFACE" >/dev/null 2>&1; then
   echo "[preflight] WARNING: LAN_INTERFACE=$LAN_INTERFACE が見つかりません．"
   echo "[preflight]          有線LANなら eth0，Wi-Fiなら wlan0 の可能性があります．"

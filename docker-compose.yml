@@ -113,6 +113,12 @@ services:
       TZ: ${TZ:-Asia/Tokyo}
       NOTIFY_API_TOKEN: ${NOTIFY_API_TOKEN}
       NOTIFY_DB_PATH: /app/data/notify.db
+      NOTIFY_OUTBOUND_ENABLED: ${NOTIFY_OUTBOUND_ENABLED:-true}
+      NOTIFY_SEVERITIES: ${NOTIFY_SEVERITIES:-critical,error}
+      NOTIFY_DEDUP_WINDOW_SECONDS: ${NOTIFY_DEDUP_WINDOW_SECONDS:-900}
+      NOTIFY_NTFY_URL: ${NOTIFY_NTFY_URL:-}
+      NOTIFY_NTFY_TOKEN: ${NOTIFY_NTFY_TOKEN:-}
+      NOTIFY_HTTP_TIMEOUT_SECONDS: ${NOTIFY_HTTP_TIMEOUT_SECONDS:-5}
     volumes:
       - ./data/notify:/app/data
     networks:

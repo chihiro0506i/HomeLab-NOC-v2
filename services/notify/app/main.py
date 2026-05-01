@@ -18,11 +18,22 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from .db import (
+    count_notifications,
     count_events,
+    fetch_event_by_id,
     fetch_events,
     get_db,
+    has_recent_sent_notification,
     init_db,
     insert_event,
+    insert_notification,
+    update_event_notification_status,
+)
+from .notifier import (
+    configured_channel,
+    dedup_since_iso,
+    send_notification,
+    should_notify,
 )
 from .schemas import EventCreate, EventResponse, HealthResponse
 from .security import verify_token
@@ -123,6 +134,7 @@ async def create_event(
         json.dumps(body.metadata, ensure_ascii=False) if body.metadata else None
     )
 
+    notified = False
     async with get_db() as db:
         event_id = await insert_event(
             db,
@@ -135,12 +147,74 @@ async def create_event(
             metadata_json=metadata_json,
             created_at=_now_iso(),
         )
+        event = await fetch_event_by_id(db, event_id)
+        if event is None:
+            logger.error("Event disappeared before notification processing id=%d", event_id)
+            return EventResponse(event_id=event_id, notified=False)
+
+        notification_status = "not_applicable"
+        notified_at: str | None = None
+        if should_notify(body.severity):
+            channel = configured_channel()
+            since = dedup_since_iso()
+            if (
+                channel != "none"
+                and dedup_key
+                and since
+                and await has_recent_sent_notification(
+                    db,
+                    dedup_key=dedup_key,
+                    channel=channel,
+                    since=since,
+                )
+            ):
+                sent_at = _now_iso()
+                notification_status = "deduplicated"
+                await insert_notification(
+                    db,
+                    event_id=event_id,
+                    channel=channel,
+                    status=notification_status,
+                    response=f"Matching sent notification exists since {since}",
+                    sent_at=sent_at,
+                )
+                logger.info(
+                    "Notification deduplicated id=%d channel=%s dedup_key=%s",
+                    event_id, channel, dedup_key,
+                )
+            else:
+                decision = await send_notification(event)
+                sent_at = _now_iso()
+                notification_status = decision.status
+                notified = decision.notified
+                if notified:
+                    notified_at = sent_at
+                await insert_notification(
+                    db,
+                    event_id=event_id,
+                    channel=decision.channel,
+                    status=decision.status,
+                    response=decision.response,
+                    sent_at=sent_at,
+                )
+        await update_event_notification_status(
+            db,
+            event_id=event_id,
+            notified_at=notified_at,
+            notification_status=notification_status,
+        )
 
     logger.info(
-        "Event stored  id=%d source=%s type=%s severity=%s title=%s",
-        event_id, body.source, body.event_type, body.severity, body.title,
+        "Event stored id=%d source=%s type=%s severity=%s notified=%s status=%s title=%s",
+        event_id,
+        body.source,
+        body.event_type,
+        body.severity,
+        notified,
+        notification_status,
+        body.title,
     )
-    return EventResponse(event_id=event_id)
+    return EventResponse(event_id=event_id, notified=notified)
 
 
 @app.get("/api/events", tags=["events"])
@@ -192,6 +266,7 @@ async def page_index(request: Request) -> HTMLResponse:
         total_events = await count_events(db)
         critical_count = await count_events(db, severity="critical")
         error_count = await count_events(db, severity="error")
+        sent_count = await count_notifications(db, status="sent")
         recent_events = await fetch_events(db, limit=5)
 
     return templates.TemplateResponse(
@@ -201,6 +276,7 @@ async def page_index(request: Request) -> HTMLResponse:
             "total_events": total_events,
             "critical_count": critical_count,
             "error_count": error_count,
+            "sent_count": sent_count,
             "recent_events": recent_events,
         },
     )
