@@ -12,6 +12,9 @@ import httpx
 
 logger = logging.getLogger("notify.notifier")
 
+_OUTBOUND_ENABLED_ENV = "NOTIFY_OUTBOUND_ENABLED"
+_LEGACY_OUTBOUND_ENABLED_ENV = "NOTIFY_ENABLE_EXTERNAL_SEND"
+
 
 @dataclass(frozen=True)
 class NotificationDecision:
@@ -36,7 +39,26 @@ def _severity_set(value: str | None) -> set[str]:
 
 def notification_enabled() -> bool:
     """Return whether outbound notifications should be attempted."""
-    return _truthy(os.getenv("NOTIFY_OUTBOUND_ENABLED"), default=True)
+    value = os.getenv(_OUTBOUND_ENABLED_ENV)
+    legacy_value = os.getenv(_LEGACY_OUTBOUND_ENABLED_ENV)
+    if value is not None and value.strip() != "":
+        if legacy_value is not None:
+            logger.warning(
+                "%s is deprecated and ignored because %s is set.",
+                _LEGACY_OUTBOUND_ENABLED_ENV,
+                _OUTBOUND_ENABLED_ENV,
+            )
+        return _truthy(value, default=True)
+
+    if legacy_value is not None and legacy_value.strip() != "":
+        logger.warning(
+            "%s is deprecated; use %s instead.",
+            _LEGACY_OUTBOUND_ENABLED_ENV,
+            _OUTBOUND_ENABLED_ENV,
+        )
+        return _truthy(legacy_value, default=True)
+
+    return True
 
 
 def configured_channel() -> str:
@@ -111,7 +133,7 @@ async def send_notification(event: dict[str, Any]) -> NotificationDecision:
         return NotificationDecision(
             channel="none",
             status="disabled",
-            response="NOTIFY_OUTBOUND_ENABLED is false",
+            response="Outbound notifications are disabled",
         )
 
     url = os.getenv("NOTIFY_NTFY_URL", "").strip()

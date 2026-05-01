@@ -40,6 +40,9 @@ http://<RaspberryPi-IP>:8090
 | `NOTIFY_NTFY_TOKEN` | — | ntfy 認証トークン。不要な場合は空 |
 | `NOTIFY_HTTP_TIMEOUT_SECONDS` | `5` | 外部通知 HTTP タイムアウト秒数 |
 
+> **設定名について:** 外部通知の有効/無効は `NOTIFY_OUTBOUND_ENABLED` を使うこと．
+> 古い `NOTIFY_ENABLE_EXTERNAL_SEND` は互換性のため読み取るが，非推奨である．
+
 ### ntfy 通知の有効化
 
 `.env` に `NOTIFY_NTFY_URL` を設定すると，`NOTIFY_SEVERITIES` に含まれるイベントだけが ntfy へ送信される．
