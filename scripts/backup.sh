@@ -14,6 +14,12 @@ mkdir -p backups
 TS="$(date +%Y%m%d-%H%M%S)"
 OUT="backups/homelab-noc-backup-${TS}.tar.gz"
 
+tar_cmd=(tar)
+if command -v sudo >/dev/null 2>&1; then
+  tar_cmd=(sudo tar)
+  echo "[backup] sudo tar を使用して，コンテナ所有ファイルも含めて読み取ります．"
+fi
+
 notify_backup_event() {
   local status="$1"
   local severity="$2"
@@ -93,7 +99,7 @@ on_error() {
 trap on_error ERR
 
 echo "[backup] .env と data/ を含むバックアップを作成します．このファイルには秘密情報が含まれる可能性があります．"
-tar -czf "$OUT" \
+"${tar_cmd[@]}" -czf "$OUT" \
   docker-compose.yml \
   .env \
   portal \
